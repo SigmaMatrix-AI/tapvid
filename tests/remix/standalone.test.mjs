@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readdirSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -14,6 +14,7 @@ test('a standalone remix install replays providers, validates templates, and loa
   const home = join(dir, 'user data');
   cpSync(new URL('../../skills/remix/', import.meta.url), skill, { recursive: true });
   cpSync(new URL('./fixtures/sample-clone/', import.meta.url), join(dir, 'clone sample'), { recursive: true });
+  assert.ok(existsSync(join(skill, 'scripts', 'media.mjs')), `standalone copy has no entry script: ${JSON.stringify({ root: readdirSync(dir), skill: readdirSync(skill, { recursive: true }).slice(0, 15) })}`);
   const invoke = (script, ...args) => {
     const r = spawnSync(process.execPath, [join(skill, 'scripts', script), ...args], {
       cwd: dir, env: { ...process.env, TAPVID_VIDEO_HOME: home }, encoding: 'utf8', timeout: 30000,

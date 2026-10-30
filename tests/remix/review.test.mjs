@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { readJson, requireRuntime, writeJson } from '../../skills/remix/scripts/lib/common.mjs';
+import { RUNTIME, readJson, requireRuntime, writeJson } from '../../skills/remix/scripts/lib/common.mjs';
 import { slotRequestId, speechRequestId } from '../../skills/remix/scripts/lib/media/plan.mjs';
 import { loadReplica } from '../../skills/remix/scripts/lib/replica.mjs';
 import { assetGroups, fidelity, finalCuts, knownLimits, placeSfx, sfxKinds } from '../../skills/remix/scripts/review.mjs';
@@ -186,20 +186,29 @@ test("template.html's bridge translates every overlay code project.mjs can emit"
   for (const p of parts) assert.equal(L[`part:${p}`].en, p, 'English part names show as written');
 });
 
-test('review data carries codes, not Chinese: kinds, modes, units, notes, flags, BGM and asset labels', { skip, timeout: 120_000 }, () => {
+test('review data carries codes, not Chinese: kinds, modes, units, notes, flags, BGM and asset labels', { skip, timeout: 120_000 }, (t) => {
+  // Estimation uses static provider prices, but routing still requires a configured key.
+  // Keep this offline fixture independent of personal credentials, routes and model caches.
+  const home = tmp();
+  t.after(() => rmSync(home, { recursive: true, force: true }));
+  symlinkSync(RUNTIME, join(home, 'runtime'), process.platform === 'win32' ? 'junction' : 'dir');
+  const env = { ...process.env, TAPVID_VIDEO_HOME: home, TAPVID_API_KEY: 'offline-review-test', TAPVID_API_BASE: 'http://127.0.0.1:1' };
   const clone = makeClone();
   const dir = makeReplica(clone, {
     edit: (r) => {
       r.audio.mode = 'narration';
       r.audio.bgm = { brief: '', candidates: [{ path: 'bgm/a.mp3' }], selected: 0, path: null, beats: null };
+      r.scenes[0].media.cover.provider = 'tapvid';
+      r.scenes[0].media.cover.model = 'seedance-2.0-fast';
       r.scenes[0].narration = 'Meet Nova, the notes app that writes back to you, sorts your week, drafts the replies you owe and reminds you of every promise you made in a meeting.';
     },
   });
   touch(join(dir, 'bgm', 'a.mp3'));
   fakeTasks(dir);
   touch(join(dir, 'out', 'tapvid.mp4'));
-  execFileSync(process.execPath, [join(SCRIPTS, 'media.mjs'), 'plan', join(dir, 'replica.json')], { cwd: dir, stdio: 'ignore' });
-  const d = pageData(node(clone, 'demo'));
+  execFileSync(process.execPath, [join(SCRIPTS, 'media.mjs'), 'plan', join(dir, 'replica.json')], { cwd: dir, env, stdio: 'ignore' });
+  const page = execFileSync(process.execPath, [join(SCRIPTS, 'review.mjs'), clone, 'demo', '--no-open'], { env, encoding: 'utf8' }).trim();
+  const d = pageData(page);
   const dict = pageDict();
   assert.equal(CJK.test(JSON.stringify(d)), false, 'no Chinese in the review data');
   assert.deepEqual(d.preview.bgm[0].title, { index: 1 });
