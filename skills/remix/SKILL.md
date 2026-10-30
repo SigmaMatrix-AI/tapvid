@@ -2,6 +2,8 @@
 name: remix
 description: Clone a reference video into a reusable template (React boards, transition table, narrative structure, reference clips per media slot, sound effects) and replicate it on the user's own topic — rewrite the copy, generate or find new footage that follows the original shots with the user's people and products swapped in, voice it at the original's pace, score it and render tapvid.mp4, all locally, at a 1:1 `high` tier (default) or a fast `low` tier. Use when the user asks (in any language) to clone, replicate or remake a reference video (a local file, a link, or keywords to search for one), or to reuse a template made earlier on a new topic.
 allowed-tools: Read, Write, Edit, Bash, Agent, Task, WebSearch, WebFetch
+metadata:
+  version: "1.0.1"
 ---
 
 # Remix a video
