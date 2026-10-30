@@ -1,0 +1,64 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A celebrity on stage",
+      "aspect": "16:9",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/text-to-video"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "request_id": "r7",
+          "response_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r7",
+          "status_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r7/status",
+          "cancel_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r7/cancel"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r7/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "COMPLETED"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r7"
+      },
+      "response": {
+        "status": 422,
+        "json": {
+          "detail": [
+            {
+              "loc": [
+                "body",
+                "prompt"
+              ],
+              "msg": "The prompt was flagged by the content policy checker",
+              "type": "content_policy_violation"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

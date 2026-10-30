@@ -1,0 +1,30 @@
+{
+  "capability": "speech.synthesize",
+  "request": {
+    "params": {
+      "text": "Hi.",
+      "voice": "JBFqnCBsd6RMkjVDRZzb"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "^https://api\\.elevenlabs\\.io/v1/text-to-speech/"
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "detail": {
+            "status": "invalid_api_key",
+            "message": "Invalid API key"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "Something disallowed",
+      "aspect": "1:1"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations"
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "error": {
+            "message": "Your request was rejected as a result of our safety system.",
+            "type": "image_generation_user_error",
+            "code": "moderation_blocked"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

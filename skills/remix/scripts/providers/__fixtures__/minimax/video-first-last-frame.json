@@ -1,0 +1,89 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "The camera pulls back",
+      "aspect": "9:16",
+      "duration_s": 6,
+      "first_frame": "_assets/tiny.png",
+      "last_frame": "_assets/tiny.png"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v2/video_generation",
+        "bodyIncludes": {
+          "model": "MiniMax-H3",
+          "resolution": "768P",
+          "duration": 6,
+          "ratio": "adaptive",
+          "content": [
+            {
+              "type": "text",
+              "text": "The camera pulls back"
+            },
+            {
+              "type": "image_url",
+              "role": "first_frame",
+              "image_url": {
+                "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAABAAAAAQBPJcTWAAAAGUlEQVR4nGM0qTjIQApgIUn1qIZRDUNKAwC8pQGrMCj8wAAAAABJRU5ErkJggg=="
+              }
+            },
+            {
+              "type": "image_url",
+              "role": "last_frame"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task_id": "77"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.minimax.io/v2/query/video_generation/77"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task": {
+            "id": "77",
+            "model": "MiniMax-H3",
+            "status": "succeeded",
+            "task_type": "generation",
+            "modality": "video",
+            "content": {
+              "url": "https://cdn.example.com/77.mp4"
+            },
+            "duration": 6
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://cdn.example.com/77.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

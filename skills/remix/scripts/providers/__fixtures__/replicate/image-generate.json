@@ -1,0 +1,69 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple",
+      "aspect": "1:1"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/bytedance/seedream-4/predictions",
+        "bodyIncludes": {
+          "input": {
+            "size": "1K",
+            "aspect_ratio": "1:1",
+            "max_images": 1
+          }
+        },
+        "headers": {
+          "authorization": "^Bearer test-REPLICATE_API_TOKEN$"
+        }
+      },
+      "response": {
+        "status": 201,
+        "json": {
+          "id": "rp_i1",
+          "status": "starting"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.replicate.com/v1/predictions/rp_i1"
+      },
+      "response": {
+        "json": {
+          "id": "rp_i1",
+          "status": "succeeded",
+          "output": [
+            "https://replicate.delivery/xezq/def/out-0.png"
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://replicate.delivery/xezq/def/out-0.png"
+      },
+      "response": {
+        "file": "_assets/tiny.png",
+        "headers": {
+          "content-type": "image/png"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema": {
+    "fields": [
+      { "key": "kicker", "type": "string", "required": true, "maxChars": 24, "desc": "One short label above the title naming the occasion; neutral tone, no product name, ≤24 chars" },
+      { "key": "title", "type": "string[]", "required": true, "minItems": 1, "maxItems": 2, "maxChars": 18, "desc": "The headline in one or two lines; each line ≤18 chars" },
+      { "key": "cover", "type": "video", "required": false, "desc": "Medium shot of the subject at work, soft side light, calm push-in; no on-screen text, no logos", "media": { "role": "broll", "aspect": "9:16", "minWidthPx": 1210, "motion": "slow push-in" } }
+    ]
+  },
+  "meta": { "displays": "title with a portrait clip", "useWhen": ["opening a launch"], "dontUseWhen": ["listing points — use Points02"], "minDuration": 1.5, "maxDuration": 6, "durationModel": "scene" },
+  "example_data": { "kicker": "NEW RELEASE", "title": ["Meet Nova", "Notes that reply"] },
+  "example_narration": "Meet Nova, the notes app that writes back.",
+  "example_duration_ms": 2500,
+  "preview_t": 0.8
+}

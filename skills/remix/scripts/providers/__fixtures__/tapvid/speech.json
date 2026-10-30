@@ -1,0 +1,71 @@
+{
+  "capability": "speech.synthesize",
+  "request": {
+    "params": {
+      "text": "Hello from TapVid.",
+      "voice": "V9x",
+      "language": "en"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/speech",
+        "bodyIncludes": {
+          "script": "Hello from TapVid.",
+          "voiceId": "V9x",
+          "model": "tapvid-tts"
+        }
+      },
+      "response": {
+        "status": 202,
+        "json": {
+          "taskId": "T4",
+          "kind": "speech",
+          "status": "new"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T4"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T4",
+          "kind": "speech",
+          "status": "completed",
+          "document": {
+            "documentId": "D0c1",
+            "name": "out",
+            "type": "mp3",
+            "status": "completed",
+            "url": "https://cdn.tapvid.ai/x/s.mp3",
+            "durationMs": 1400
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://cdn.tapvid.ai/x/s.mp3"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp3"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "audio/mpeg"
+      }
+    ]
+  }
+}

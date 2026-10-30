@@ -1,0 +1,153 @@
+{
+  "capability": "avatar.generate",
+  "request": {
+    "params": {
+      "mode": "audio",
+      "audio": "_assets/tiny.mp3",
+      "portrait": "_assets/tiny.png",
+      "aspect": "9:16"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+        "bodyIncludes": {
+          "content_type": "image/png"
+        },
+        "headers": {
+          "authorization": "Key test-FAL_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "upload_url": "https://upload.fal.media/u/p1?sig=1",
+          "file_url": "https://v3.fal.media/files/p1"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "url": "https://upload.fal.media/u/p1?sig=1",
+        "headers": {
+          "content-type": "image/png"
+        }
+      },
+      "response": {
+        "status": 200,
+        "text": ""
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+        "bodyIncludes": {
+          "content_type": "audio/mpeg"
+        },
+        "headers": {
+          "authorization": "Key test-FAL_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "upload_url": "https://upload.fal.media/u/a1?sig=1",
+          "file_url": "https://v3.fal.media/files/a1"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "url": "https://upload.fal.media/u/a1?sig=1",
+        "headers": {
+          "content-type": "audio/mpeg"
+        }
+      },
+      "response": {
+        "status": 200,
+        "text": ""
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/bytedance/omnihuman",
+        "bodyIncludes": {
+          "image_url": "https://v3.fal.media/files/p1",
+          "audio_url": "https://v3.fal.media/files/a1"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "request_id": "r6",
+          "response_url": "https://queue.fal.run/fal-ai/bytedance/requests/r6",
+          "status_url": "https://queue.fal.run/fal-ai/bytedance/requests/r6/status",
+          "cancel_url": "https://queue.fal.run/fal-ai/bytedance/requests/r6/cancel"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/fal-ai/bytedance/requests/r6/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "IN_PROGRESS"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/fal-ai/bytedance/requests/r6/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "COMPLETED"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/fal-ai/bytedance/requests/r6"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "video": {
+            "url": "https://v3.fal.media/files/av.mp4"
+          },
+          "duration": 1.0
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://v3.fal.media/files/av.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

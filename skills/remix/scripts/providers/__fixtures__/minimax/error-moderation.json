@@ -1,0 +1,51 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A celebrity at the beach",
+      "aspect": "16:9",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v2/video_generation"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task_id": "79"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.minimax.io/v2/query/video_generation/79"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task": {
+            "id": "79",
+            "model": "MiniMax-H3",
+            "status": "failed",
+            "task_type": "generation",
+            "modality": "video",
+            "error": {
+              "code": "1026",
+              "message": "video description contains sensitive content"
+            },
+            "usage": {}
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

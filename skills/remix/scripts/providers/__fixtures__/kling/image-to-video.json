@@ -1,0 +1,86 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5,
+      "first_frame": "_assets/tiny.png"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api-singapore.klingai.com/image-to-video/kling-4.0",
+        "bodyIncludes": {
+          "contents": [
+            {
+              "type": "first_frame"
+            }
+          ],
+          "settings": {
+            "resolution": "720p"
+          }
+        },
+        "headers": {
+          "authorization": "^Bearer eyJ[\\w-]+\\.[\\w-]+\\.[\\w-]+$"
+        }
+      },
+      "response": {
+        "json": {
+          "code": 0,
+          "message": "SUCCEED",
+          "data": {
+            "task_id": "kt_2",
+            "status": "submitted"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api-singapore.klingai.com/tasks\\?task_ids=kt_2$"
+      },
+      "response": {
+        "json": {
+          "code": 0,
+          "message": "SUCCEED",
+          "data": [
+            {
+              "task_id": "kt_2",
+              "status": "succeeded",
+              "outputs": [
+                {
+                  "type": "video",
+                  "url": "https://v15-kling.klingai.com/out2.mp4"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://v15-kling.klingai.com/out2.mp4"
+      },
+      "response": {
+        "file": "_assets/tiny.mp4",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

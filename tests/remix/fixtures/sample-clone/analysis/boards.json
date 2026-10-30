@@ -1,0 +1,12 @@
+{
+  "fps": 30,
+  "canvas": { "width": 1920, "height": 1080 },
+  "cover_t": 1.0,
+  "source_frame_time": "middle",
+  "boards": [
+    { "name": "Title01", "start": 0, "end": 2.5, "shots": [0],
+      "media": { "cover": { "crop": [0.52, 0.12, 0.42, 0.76], "subjects": [ { "id": "presenter", "kind": "person", "box": [0.3, 0.1, 0.4, 0.8], "t": 1.0 } ] } } },
+    { "name": "Points02", "start": 2.5, "end": 5.0, "shots": [1],
+      "segments": [ { "key": "points.0.say", "start": 0, "end": 1.2 }, { "key": "points.1.say", "start": 1.2, "end": 2.5 } ] }
+  ]
+}

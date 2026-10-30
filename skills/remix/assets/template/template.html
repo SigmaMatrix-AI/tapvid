@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <!-- #root is the stage, sized to the template canvas (project.mjs writes the numbers). -->
+  <style>html,body{margin:0;padding:0;background:#000}#root{width:CANVAS_WIDTHpx;height:CANVAS_HEIGHTpx;overflow:hidden;position:relative}
+  #slot-layer{position:absolute;left:0;top:0;width:CANVAS_WIDTHpx;height:CANVAS_HEIGHTpx;pointer-events:none;z-index:50}
+  #slot-layer .slot{position:absolute;border:6px solid #ff2d3d;border-radius:10px;box-sizing:border-box;box-shadow:0 0 0 2px rgba(0,0,0,.55),inset 0 0 0 2px rgba(0,0,0,.35)}
+  #slot-layer .slot.part{border:4px solid #2f8cff;box-shadow:0 0 0 2px rgba(0,0,0,.45)}
+  #slot-layer .slot.part .badge{background:#2f8cff;top:auto;bottom:100%;left:-4px;margin-bottom:4px;border-radius:8px}
+  #slot-layer .badge{position:absolute;left:12px;top:12px;padding:6px 14px;border-radius:999px;background:#ff2d3d;color:#fff;font:700 26px/1.2 -apple-system,"PingFang SC","Segoe UI",sans-serif}
+  #slot-layer .chips{position:absolute;left:12px;bottom:12px;right:12px;display:flex;flex-wrap:wrap;gap:8px}
+  #slot-layer .chip{padding:5px 12px;border-radius:8px;background:rgba(0,0,0,.72);color:#fff;font:600 22px/1.3 -apple-system,"PingFang SC","Segoe UI",sans-serif}
+  #slot-layer .prompt{position:absolute;left:12px;right:12px;top:64px;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.78);color:#e8e8ee;font:20px/1.35 ui-monospace,Menlo,Consolas,monospace;max-height:60%;overflow:hidden}</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>/*__BUNDLE__*/</script>
+  <script>
+  // Review-shell bridge, dormant in the renderer (top-level page). Embedded in review.html the
+  // page is another file:// origin, so the shell drives window.scenePlayer by postMessage and
+  // this page reports its clock back. Slot overlays (badge, replacement chips, prompt) are drawn
+  // here from the data-slot attributes project.mjs puts on media elements, as codes translated by
+  // L into the language the shell sends ({ cmd: 'lang' }, English until then); code-drawn
+  // components a board marks with data-part="<short English noun>" (Title card, Sticker,
+  // Captions) get a blue frame, the common names translated, others shown as written.
+  // Sound effects: a [data-sfx] element first seen while the clock runs forward asks the shell
+  // to play its sound ({ tapvid: 'sfx', kind, gain }).
+  (function () {
+    if (window.parent === window) return;
+    var show = { slots: true, prompts: false };
+    var lang = 'en';
+    var L = {
+      'slot:image': { en: 'Media slot · Image', zh: '素材位 · 图片' },
+      'slot:video': { en: 'Media slot · Video', zh: '素材位 · 视频' },
+      'gen:image': { en: 'AI image · Generated', zh: 'AI 图片 · 已生成' },
+      'gen:video': { en: 'AI video · Generated', zh: 'AI 视频 · 已生成' },
+      'gen:avatar': { en: 'Digital human · Generated', zh: '数字人 · 已生成' },
+      'sketch:image': { en: 'AI image · Sketch', zh: 'AI 图片 · 草图' },
+      'sketch:video': { en: 'AI video · Sketch', zh: 'AI 视频 · 草图' },
+      'sketch:avatar': { en: 'Digital human · Sketch', zh: '数字人 · 草图' },
+      'portrait': { en: 'Digital human · Photo preview', zh: '数字人 · 照片预览' },
+      'ref': { en: 'Reference', zh: '参考' },
+      'user': { en: 'Your material', zh: '你的素材' },
+      'code': { en: 'Animation', zh: '动画' },
+      'subject:person': { en: 'Person', zh: '人物' },
+      'subject:product': { en: 'Product', zh: '产品' },
+      'subject:logo': { en: 'Logo', zh: 'Logo' },
+      'subject:object': { en: 'Object', zh: '物品' },
+      'subject:animal': { en: 'Animal', zh: '动物' },
+      'subject:other': { en: 'Subject', zh: '主体' },
+      'target:photo': { en: 'your photo', zh: '你的照片' },
+      'target:file': { en: 'your material', zh: '你的素材' },
+      'target:ai': { en: 'AI-generated', zh: 'AI 生成' },
+      'target:tbd': { en: 'to be decided', zh: '待定' },
+      'part': { en: 'Component · ', zh: '组件 · ' },
+      'part:Title card': { en: 'Title card', zh: '标题卡' },
+      'part:Sticker': { en: 'Sticker', zh: '贴纸' },
+      'part:Badge': { en: 'Badge', zh: '徽标' },
+      'part:Icon': { en: 'Icon', zh: '图标' },
+      'part:Heading': { en: 'Heading', zh: '标题' },
+      'part:Call to action': { en: 'Call to action', zh: '行动号召' },
+      'part:Captions': { en: 'Captions', zh: '字幕' },
+      'part:Step number': { en: 'Step number', zh: '步骤编号' },
+      'part:Screen card': { en: 'Screen card', zh: '截图卡片' }
+    };
+    function tr(key, fallback) { return L[key] ? L[key][lang] : fallback; }
+    var layer = document.createElement('div');
+    layer.id = 'slot-layer';
+    document.body.appendChild(layer);
+    window.addEventListener('message', function (e) {
+      var m = e.data || {};
+      var p = window.scenePlayer;
+      if (m.tapvid === 'cmd' && m.cmd === 'lang') { lang = m.lang === 'zh' ? 'zh' : 'en'; return; }
+      if (m.tapvid !== 'cmd' || !p) return;
+      if (m.cmd === 'play') p.play();
+      else if (m.cmd === 'pause') p.pause();
+      else if (m.cmd === 'seek') { p.seekTo(m.t); sfxSeen = null; }
+      else if (m.cmd === 'overlay') show = { slots: !!m.slots, prompts: !!m.prompts };
+    });
+    function el(cls, text) { var d = document.createElement('div'); d.className = cls; if (text) d.textContent = text; return d; }
+    function drawSlots() {
+      layer.textContent = '';
+      if (!show.slots) return;
+      var base = document.getElementById('root').getBoundingClientRect();
+      document.querySelectorAll('[data-slot],[data-part]').forEach(function (node) {
+        var r = node.getBoundingClientRect();
+        if (r.width < 4 || r.height < 4) return;
+        var part = !node.dataset.slot;
+        var box = el(part ? 'slot part' : 'slot');
+        if (part) box.appendChild(el('badge', tr('part') + tr('part:' + node.dataset.part, node.dataset.part)));
+        box.style.left = (r.left - base.left) + 'px'; box.style.top = (r.top - base.top) + 'px';
+        box.style.width = r.width + 'px'; box.style.height = r.height + 'px';
+        if (node.dataset.badge) box.appendChild(el('badge', tr(node.dataset.badge, node.dataset.badge)));
+        if (show.prompts && node.dataset.prompt) box.appendChild(el('prompt', node.dataset.prompt));
+        var chips = [];
+        try { chips = JSON.parse(node.dataset.replace || '[]'); } catch (err) { chips = []; }
+        if (chips.length) {
+          var row = el('chips');
+          chips.forEach(function (c) { row.appendChild(el('chip', tr('subject:' + c.subject, c.subject) + ' → ' + tr('target:' + c.target, c.target))); });
+          box.appendChild(row);
+        }
+        layer.appendChild(box);
+      });
+    }
+    // Same visibility rule as capture.mjs (visibleSfxInPage), so the preview cues the elements the
+    // render does. The default id scopes the kind + DOM index by the scene wrapper node, numbered
+    // on first sight (a wrapper lives as long as its scene, transitions included).
+    var sfxScopes = 0;
+    function visibleSfx() {
+      var counts = {};
+      var out = [];
+      document.querySelectorAll('[data-sfx]').forEach(function (node) {
+        var wrap = node.closest('[data-time-offset]');
+        var scope = wrap ? (wrap.__tapvidSfxScope || (wrap.__tapvidSfxScope = ++sfxScopes)) : '';
+        var index = counts[scope] || 0;
+        counts[scope] = index + 1;
+        var r = node.getBoundingClientRect();
+        if (!(r.width > 0 && r.height > 0) || getComputedStyle(node).visibility === 'hidden') return;
+        var opacity = 1;
+        for (var n = node; n && n.nodeType === 1; n = n.parentElement) opacity *= Number(getComputedStyle(n).opacity);
+        if (opacity <= 0.05) return;
+        var gain = parseFloat(node.dataset.sfxGain);
+        out.push({ id: node.dataset.sfxId || (scope ? scope + ':' : '') + node.dataset.sfx + index, kind: node.dataset.sfx, gain: isFinite(gain) ? gain : 1 });
+      });
+      return out;
+    }
+    // A seek or a backwards jump starts the seen-set over, counting what is already on screen
+    // (past t = 0) as heard, so scrubbing never fires a burst of sounds.
+    var sfxSeen = null;
+    var lastT = 0;
+    function cueSfx(t) {
+      var vis = visibleSfx();
+      if (sfxSeen === null || t < lastT) {
+        sfxSeen = {};
+        if (t > 0) vis.forEach(function (c) { sfxSeen[c.id] = true; });
+      } else if (t > lastT) {
+        vis.forEach(function (c) {
+          if (sfxSeen[c.id]) return;
+          sfxSeen[c.id] = true;
+          window.parent.postMessage({ tapvid: 'sfx', kind: c.kind, gain: c.gain }, '*');
+        });
+      }
+      lastT = t;
+    }
+    function tick() {
+      var p = window.scenePlayer;
+      if (p) {
+        window.parent.postMessage({ tapvid: 'tick', t: p.getCurrentTime(), duration: p.getDuration() }, '*');
+        drawSlots();
+        cueSfx(p.getCurrentTime());
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+  </script>
+</body>
+</html>

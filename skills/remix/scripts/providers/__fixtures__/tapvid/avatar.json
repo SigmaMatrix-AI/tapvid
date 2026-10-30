@@ -1,0 +1,103 @@
+{
+  "capability": "avatar.generate",
+  "request": {
+    "params": {
+      "mode": "tts",
+      "script": "Welcome to the show.",
+      "voice": "V9x",
+      "portrait": "_assets/tiny.png",
+      "aspect": "9:16"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/materials?usage=asset"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "materialId": "M4",
+          "type": "document"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/avatar",
+        "bodyIncludes": {
+          "script": "Welcome to the show.",
+          "voiceId": "V9x",
+          "imageDocumentId": "M4",
+          "model": "p-video-avatar"
+        }
+      },
+      "response": {
+        "status": 202,
+        "json": {
+          "taskId": "T5",
+          "kind": "avatar",
+          "status": "new"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T5"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T5",
+          "kind": "avatar",
+          "status": "submitting"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T5"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T5",
+          "kind": "avatar",
+          "status": "completed",
+          "document": {
+            "documentId": "D0c1",
+            "name": "out",
+            "type": "mp4",
+            "status": "completed",
+            "url": "https://cdn.tapvid.ai/x/a.mp4",
+            "durationMs": 2000,
+            "width": 720,
+            "height": 1280
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://cdn.tapvid.ai/x/a.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

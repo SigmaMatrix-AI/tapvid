@@ -1,0 +1,92 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "Follow video 1's camera motion with the person in image 1",
+      "aspect": "16:9",
+      "duration_s": 5,
+      "refs": [
+        {
+          "file": "_assets/tiny.png",
+          "role": "subject"
+        }
+      ],
+      "ref_videos": [
+        {
+          "file": "_assets/tiny.mp4",
+          "role": "motion"
+        }
+      ]
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v2/video_generation",
+        "bodyIncludes": {
+          "ratio": "16:9",
+          "content": [
+            {
+              "type": "text"
+            },
+            {
+              "type": "image_url",
+              "role": "reference_image"
+            },
+            {
+              "type": "video_url",
+              "role": "reference_video"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task_id": "78"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.minimax.io/v2/query/video_generation/78"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task": {
+            "id": "78",
+            "model": "MiniMax-H3",
+            "status": "succeeded",
+            "task_type": "generation",
+            "modality": "video",
+            "content": {
+              "url": "https://cdn.example.com/78.mp4"
+            },
+            "duration": 5
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://cdn.example.com/78.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

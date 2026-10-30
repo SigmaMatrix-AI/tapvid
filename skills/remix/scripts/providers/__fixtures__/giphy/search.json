@@ -1,0 +1,67 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "mind blown",
+      "animated": true,
+      "orientation": "landscape",
+      "limit": 2
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api\\.giphy\\.com/v1/gifs/search\\?api_key=test-GIPHY_API_KEY&q=mind\\+blown&limit=2&rating=pg-13&lang=en$"
+      },
+      "response": {
+        "json": {
+          "data": [
+            {
+              "type": "gif",
+              "id": "26ufdipQqU2lhNA4g",
+              "url": "https://giphy.com/gifs/mind-blown-26ufdipQqU2lhNA4g",
+              "username": "reactions",
+              "title": "Mind Blown GIF by Reactions",
+              "user": { "username": "reactions", "display_name": "Reactions" },
+              "images": {
+                "original": {
+                  "width": "480", "height": "270", "frames": "40",
+                  "url": "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+                  "mp4": "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.mp4"
+                },
+                "preview": {
+                  "width": "150", "height": "84",
+                  "mp4": "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy-preview.mp4"
+                },
+                "fixed_height": {
+                  "width": "356", "height": "200",
+                  "mp4": "https://media.giphy.com/media/26ufdipQqU2lhNA4g/200.mp4"
+                }
+              }
+            },
+            {
+              "type": "gif",
+              "id": "tall1",
+              "url": "https://giphy.com/gifs/tall1",
+              "title": "Portrait GIF",
+              "images": {
+                "original": {
+                  "width": "270", "height": "480",
+                  "url": "https://media.giphy.com/media/tall1/giphy.gif",
+                  "mp4": "https://media.giphy.com/media/tall1/giphy.mp4"
+                }
+              }
+            }
+          ],
+          "pagination": { "total_count": 2, "count": 2, "offset": 0 },
+          "meta": { "status": 200, "msg": "OK" }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 1
+  }
+}

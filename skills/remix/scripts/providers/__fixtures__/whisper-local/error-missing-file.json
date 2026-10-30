@@ -1,0 +1,6 @@
+{
+  "capability": "speech.transcribe",
+  "request": { "params": { "file": "_assets/missing.wav" } },
+  "exchanges": [],
+  "expect": { "status": "failed", "error": "invalid" }
+}

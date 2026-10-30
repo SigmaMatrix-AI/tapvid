@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "sample-launch",
+  "title": "Sample launch",
+  "canvas": { "width": 1920, "height": 1080 },
+  "fps": 30,
+  "category": "no_avatar",
+  "audio": { "source_mode": "narration", "captions": null, "bpm": null },
+  "source": { "file": "../source/source.mp4", "duration_s": 5, "url": null },
+  "boards": ["Title01", "Points02"],
+  "transitions": [
+    { "from": "Title01", "to": "Points02", "type": "page-flip", "duration": 0.5, "params": { "direction": "left", "curl": 0.35 } }
+  ]
+}

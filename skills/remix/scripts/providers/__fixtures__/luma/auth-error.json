@@ -1,0 +1,31 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.lumalabs.ai/dream-machine/v1/generations/video",
+        "headers": {
+          "authorization": "^Bearer test-LUMA_API_KEY$"
+        }
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "detail": "Invalid API key"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

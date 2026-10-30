@@ -1,0 +1,87 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5,
+      "min_short_edge": 720
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.lumalabs.ai/dream-machine/v1/generations/video",
+        "bodyIncludes": {
+          "model": "ray-2",
+          "resolution": "720p",
+          "duration": "5s",
+          "aspect_ratio": "16:9"
+        },
+        "headers": {
+          "authorization": "^Bearer test-LUMA_API_KEY$"
+        }
+      },
+      "response": {
+        "status": 201,
+        "json": {
+          "id": "d2f7d7a1-luma",
+          "state": "queued"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.lumalabs.ai/dream-machine/v1/generations/d2f7d7a1-luma",
+        "headers": {
+          "authorization": "^Bearer test-LUMA_API_KEY$"
+        }
+      },
+      "response": {
+        "json": {
+          "id": "d2f7d7a1-luma",
+          "state": "dreaming",
+          "assets": null
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.lumalabs.ai/dream-machine/v1/generations/d2f7d7a1-luma"
+      },
+      "response": {
+        "json": {
+          "id": "d2f7d7a1-luma",
+          "state": "completed",
+          "failure_reason": null,
+          "assets": {
+            "video": "https://storage.cdn-luma.com/dream_machine/out.mp4"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://storage.cdn-luma.com/dream_machine/out.mp4"
+      },
+      "response": {
+        "file": "_assets/tiny.mp4",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "capability": "video.search",
+  "request": {
+    "params": {
+      "query": "coffee",
+      "sort": "views",
+      "orientation": "landscape",
+      "limit": 2
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://pixabay.com/api/videos/\\?key=test-PIXABAY_API_KEY&q=coffee&per_page=3&safesearch=true&order=popular$"
+      },
+      "response": {
+        "json": {
+          "total": 3,
+          "totalHits": 3,
+          "hits": [
+            {
+              "id": 125,
+              "pageURL": "https://pixabay.com/videos/id-125/",
+              "tags": "coffee, cup",
+              "duration": 12,
+              "views": 4462,
+              "user": "Coverr-Free-Footage",
+              "videos": {
+                "large": {
+                  "url": "https://cdn.pixabay.com/video/125_large.mp4",
+                  "width": 1920,
+                  "height": 1080,
+                  "thumbnail": "https://cdn.pixabay.com/video/125_large.jpg"
+                },
+                "medium": {
+                  "url": "https://cdn.pixabay.com/video/125_medium.mp4",
+                  "width": 1280,
+                  "height": 720
+                }
+              }
+            },
+            {
+              "id": 126,
+              "pageURL": "https://pixabay.com/videos/id-126/",
+              "tags": "coffee",
+              "duration": 8,
+              "views": 100,
+              "user": "A",
+              "videos": {
+                "large": {
+                  "url": "",
+                  "width": 0,
+                  "height": 0
+                },
+                "medium": {
+                  "url": "https://cdn.pixabay.com/video/126_medium.mp4",
+                  "width": 1280,
+                  "height": 720,
+                  "thumbnail": "https://cdn.pixabay.com/video/126_medium.jpg"
+                }
+              }
+            },
+            {
+              "id": 127,
+              "pageURL": "https://pixabay.com/videos/id-127/",
+              "tags": "portrait coffee",
+              "duration": 9,
+              "views": 50,
+              "user": "B",
+              "videos": {
+                "large": {
+                  "url": "https://cdn.pixabay.com/video/127_large.mp4",
+                  "width": 1080,
+                  "height": 1920
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 2
+  }
+}

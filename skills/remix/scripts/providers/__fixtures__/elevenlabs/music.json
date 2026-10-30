@@ -1,0 +1,38 @@
+{
+  "capability": "music.generate",
+  "request": {
+    "params": {
+      "prompt": "calm ambient pad, slow",
+      "duration_s": 12.5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/music",
+        "bodyIncludes": {
+          "prompt": "calm ambient pad, slow",
+          "music_length_ms": 13000,
+          "model_id": "music_v2_5",
+          "force_instrumental": true
+        }
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp3",
+        "headers": {
+          "content-type": "audio/mpeg"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "audio/mpeg"
+      }
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple on a white table",
+      "aspect": "1:1",
+      "refs": [
+        {
+          "file": "_assets/tiny.png",
+          "role": "style"
+        }
+      ]
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/materials?usage=asset"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "materialId": "M3",
+          "type": "document"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/image",
+        "bodyIncludes": {
+          "model": "nano-banana-pro",
+          "aspectRatio": "1:1",
+          "referenceDocumentIds": [
+            "M3"
+          ]
+        }
+      },
+      "response": {
+        "status": 202,
+        "json": {
+          "taskId": "T3",
+          "kind": "image",
+          "status": "new"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T3"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T3",
+          "kind": "image",
+          "status": "completed",
+          "chargedCredits": 21,
+          "document": {
+            "documentId": "D0c1",
+            "name": "out",
+            "type": "png",
+            "status": "completed",
+            "url": "https://cdn.tapvid.ai/x/img.png",
+            "width": 1024,
+            "height": 1024
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://cdn.tapvid.ai/x/img.png"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.png"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

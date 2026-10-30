@@ -1,0 +1,95 @@
+{
+  "capability": "video.search",
+  "request": {
+    "params": {
+      "query": "product launch video",
+      "sort": "views",
+      "duration": "short",
+      "published_after": "2026-01-01",
+      "limit": 2
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://www.googleapis.com/youtube/v3/search\\?part=snippet&type=video&q=product\\+launch\\+video&maxResults=2&order=viewCount&videoDuration=short&publishedAfter=2026-01-01T00%3A00%3A00Z&key=test-YOUTUBE_API_KEY$"
+      },
+      "response": {
+        "json": {
+          "kind": "youtube#searchListResponse",
+          "items": [
+            {
+              "kind": "youtube#searchResult",
+              "id": {
+                "kind": "youtube#video",
+                "videoId": "aaa111"
+              },
+              "snippet": {
+                "publishedAt": "2026-03-01T12:00:00Z",
+                "channelTitle": "Acme",
+                "title": "Acme &amp; Co launch",
+                "thumbnails": {
+                  "high": {
+                    "url": "https://i.ytimg.com/vi/aaa111/hqdefault.jpg"
+                  }
+                }
+              }
+            },
+            {
+              "kind": "youtube#searchResult",
+              "id": {
+                "kind": "youtube#video",
+                "videoId": "bbb222"
+              },
+              "snippet": {
+                "publishedAt": "2026-04-02T08:00:00Z",
+                "channelTitle": "Beta",
+                "title": "Beta launch",
+                "thumbnails": {
+                  "default": {
+                    "url": "https://i.ytimg.com/vi/bbb222/default.jpg"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://www.googleapis.com/youtube/v3/videos\\?part=contentDetails%2Cstatistics&id=aaa111%2Cbbb222&key=test-YOUTUBE_API_KEY$"
+      },
+      "response": {
+        "json": {
+          "items": [
+            {
+              "id": "aaa111",
+              "contentDetails": {
+                "duration": "PT1M3S"
+              },
+              "statistics": {
+                "viewCount": "1200345"
+              }
+            },
+            {
+              "id": "bbb222",
+              "contentDetails": {
+                "duration": "PT45S"
+              },
+              "statistics": {
+                "viewCount": "9876"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 2
+  }
+}

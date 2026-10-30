@@ -1,0 +1,74 @@
+{
+  "capability": "avatar.generate",
+  "request": {
+    "params": {
+      "mode": "audio",
+      "aspect": "16:9",
+      "portrait": "_assets/tiny.png",
+      "audio": "_assets/tiny.mp3"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/bytedance/omni-human/predictions",
+        "headers": {
+          "authorization": "^Bearer test-REPLICATE_API_TOKEN$"
+        }
+      },
+      "response": {
+        "status": 201,
+        "json": {
+          "id": "rp_a1",
+          "status": "starting"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.replicate.com/v1/predictions/rp_a1"
+      },
+      "response": {
+        "json": {
+          "id": "rp_a1",
+          "status": "processing"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.replicate.com/v1/predictions/rp_a1"
+      },
+      "response": {
+        "json": {
+          "id": "rp_a1",
+          "status": "succeeded",
+          "output": "https://replicate.delivery/xezq/ghi/output.mp4"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://replicate.delivery/xezq/ghi/output.mp4"
+      },
+      "response": {
+        "file": "_assets/tiny.mp4",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

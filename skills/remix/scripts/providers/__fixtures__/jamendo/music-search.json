@@ -1,0 +1,63 @@
+{
+  "capability": "music.search",
+  "request": {
+    "params": {
+      "query": "ambient",
+      "min_s": 30,
+      "max_s": 180,
+      "limit": 2
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api\\.jamendo\\.com/v3\\.0/tracks/\\?client_id=test-JAMENDO_CLIENT_ID&format=json&search=ambient&vocalinstrumental=instrumental&include=licenses&audiodlformat=mp32&limit=4&durationbetween=30_180$"
+      },
+      "response": {
+        "json": {
+          "headers": {
+            "status": "success",
+            "code": 0,
+            "error_message": "",
+            "warnings": "",
+            "results_count": 3
+          },
+          "results": [
+            {
+              "id": "1532771",
+              "name": "Calm Morning",
+              "duration": 154,
+              "artist_name": "Pianochill",
+              "audiodownload": "https://prod-1.storage.jamendo.com/download/track/1532771/mp32/",
+              "audiodownload_allowed": true,
+              "license_ccurl": "http://creativecommons.org/licenses/by/3.0/"
+            },
+            {
+              "id": "1532772",
+              "name": "No Download",
+              "duration": 120,
+              "artist_name": "X",
+              "audiodownload": "",
+              "audiodownload_allowed": false,
+              "license_ccurl": "http://creativecommons.org/licenses/by-nc-nd/3.0/"
+            },
+            {
+              "id": "1532773",
+              "name": "Drift",
+              "duration": 98,
+              "artist_name": "Y",
+              "audiodownload": "https://prod-1.storage.jamendo.com/download/track/1532773/mp32/",
+              "audiodownload_allowed": true,
+              "license_ccurl": "http://creativecommons.org/licenses/by-sa/3.0/"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 2
+  }
+}

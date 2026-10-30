@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "media request / result envelope",
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "capability",
+        "params"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,64}$"
+        },
+        "capability": {
+          "enum": [
+            "image.generate",
+            "video.generate",
+            "speech.synthesize",
+            "speech.voices",
+            "speech.transcribe",
+            "video.understand",
+            "music.generate",
+            "music.search",
+            "avatar.generate",
+            "avatar.list",
+            "video.search",
+            "video.download",
+            "image.search"
+          ]
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "params": {
+          "type": "object"
+        },
+        "out": {
+          "type": "string"
+        },
+        "tier": {
+          "enum": [
+            "economy",
+            "standard"
+          ]
+        },
+        "after": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resolved_params": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "failed"
+          ]
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resolved_params": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "files": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "cost": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "error": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "auth",
+                "quota",
+                "moderation",
+                "invalid",
+                "unsupported",
+                "transient"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

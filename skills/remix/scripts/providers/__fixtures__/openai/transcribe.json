@@ -1,0 +1,61 @@
+{
+  "capability": "speech.transcribe",
+  "request": {
+    "params": {
+      "file": "_assets/tiny.wav",
+      "language": "en"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "bodyIncludes": {
+          "model": "whisper-1",
+          "response_format": "verbose_json",
+          "timestamp_granularities[]": "segment",
+          "language": "en",
+          "file": "<file audio/wav>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task": "transcribe",
+          "language": "english",
+          "duration": 1.0,
+          "text": "Hello there.",
+          "segments": [
+            {
+              "id": 0,
+              "start": 0.0,
+              "end": 1.0,
+              "text": " Hello there."
+            }
+          ],
+          "words": [
+            {
+              "word": "Hello",
+              "start": 0.0,
+              "end": 0.4
+            },
+            {
+              "word": "there.",
+              "start": 0.45,
+              "end": 1.0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "application/json"
+      }
+    ]
+  }
+}

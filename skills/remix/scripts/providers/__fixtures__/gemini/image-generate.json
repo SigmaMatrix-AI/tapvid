@@ -1,0 +1,60 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple",
+      "aspect": "16:9",
+      "min_short_edge": 1080
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/interactions",
+        "bodyIncludes": {
+          "model": "gemini-nano-banana-2.1",
+          "response_format": {
+            "type": "image",
+            "aspect_ratio": "16:9",
+            "image_size": "2K"
+          }
+        },
+        "headers": {
+          "x-goog-api-key": "test-GEMINI_API_KEY"
+        }
+      },
+      "response": {
+        "json": {
+          "id": "v1_int",
+          "model": "m",
+          "object": "interaction",
+          "status": "completed",
+          "steps": [
+            {
+              "type": "user_input"
+            },
+            {
+              "type": "model_output",
+              "content": [
+                {
+                  "type": "image",
+                  "mime_type": "image/png",
+                  "data": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAABAAAAAQBPJcTWAAAAGUlEQVR4nGM0qTjIQApgIUn1qIZRDUNKAwC8pQGrMCj8wAAAAABJRU5ErkJggg=="
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

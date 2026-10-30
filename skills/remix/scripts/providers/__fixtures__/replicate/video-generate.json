@@ -1,0 +1,89 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5,
+      "min_short_edge": 1080,
+      "first_frame": "_assets/tiny.png"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/bytedance/seedance-1-pro/predictions",
+        "bodyIncludes": {
+          "input": {
+            "duration": 5,
+            "resolution": "1080p",
+            "aspect_ratio": "16:9"
+          }
+        },
+        "headers": {
+          "authorization": "^Bearer test-REPLICATE_API_TOKEN$"
+        }
+      },
+      "response": {
+        "status": 201,
+        "json": {
+          "id": "rp_v1",
+          "status": "starting",
+          "urls": {
+            "get": "https://api.replicate.com/v1/predictions/rp_v1"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.replicate.com/v1/predictions/rp_v1"
+      },
+      "response": {
+        "json": {
+          "id": "rp_v1",
+          "status": "processing",
+          "output": null
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.replicate.com/v1/predictions/rp_v1"
+      },
+      "response": {
+        "json": {
+          "id": "rp_v1",
+          "status": "succeeded",
+          "output": "https://replicate.delivery/xezq/abc/output.mp4",
+          "metrics": {
+            "predict_time": 41.2
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://replicate.delivery/xezq/abc/output.mp4"
+      },
+      "response": {
+        "file": "_assets/tiny.mp4",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

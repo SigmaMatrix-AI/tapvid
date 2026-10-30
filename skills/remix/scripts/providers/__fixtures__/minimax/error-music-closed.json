@@ -1,0 +1,31 @@
+{
+  "capability": "music.generate",
+  "request": {
+    "params": {
+      "prompt": "calm ambient pad, slow",
+      "duration_s": 10,
+      "instrumental": true
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v1/music_generation"
+      },
+      "response": {
+        "status": 410,
+        "json": {
+          "base_resp": {
+            "status_code": 2153,
+            "status_msg": "This Music API is no longer available to new users. Existing paying customers can continue to use the service."
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "unsupported"
+  }
+}

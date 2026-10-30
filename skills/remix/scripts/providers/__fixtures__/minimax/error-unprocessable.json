@@ -1,0 +1,34 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "Sensitive scene",
+      "aspect": "1:1",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v2/video_generation"
+      },
+      "response": {
+        "status": 422,
+        "json": {
+          "type": "error",
+          "error": {
+            "type": "unprocessable_entity_error",
+            "message": "video description contains sensitive content (1026)",
+            "http_code": "422"
+          },
+          "request_id": "r"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

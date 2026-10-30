@@ -1,0 +1,28 @@
+{
+  "capability": "speech.synthesize",
+  "request": {
+    "params": {
+      "text": "Hi.",
+      "voice": "V9x"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/speech"
+      },
+      "response": {
+        "status": 402,
+        "json": {
+          "error": "insufficient_credits",
+          "request_id": "r-2"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "quota"
+  }
+}

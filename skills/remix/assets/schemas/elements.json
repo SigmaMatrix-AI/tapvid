@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "analysis/elements.json",
+  "type": "object",
+  "required": [
+    "elements"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/element"
+      }
+    }
+  },
+  "$defs": {
+    "move": {
+      "enum": [
+        "pop",
+        "fade",
+        "slide",
+        "wipe",
+        "type",
+        "cut",
+        "scale",
+        "none"
+      ]
+    },
+    "element": {
+      "type": "object",
+      "required": [
+        "id",
+        "board",
+        "kind",
+        "in",
+        "out",
+        "box"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "board": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "kind": {
+          "enum": [
+            "picture",
+            "screen",
+            "sticker",
+            "title",
+            "caption",
+            "icon",
+            "badge",
+            "presenter",
+            "footage",
+            "shape"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "in": {
+          "type": "number",
+          "minimum": 0
+        },
+        "out": {
+          "type": "number",
+          "minimum": 0
+        },
+        "box": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "enter": {
+          "$ref": "#/$defs/move"
+        },
+        "exit": {
+          "$ref": "#/$defs/move"
+        },
+        "idle": {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "enum": [
+                "none",
+                "boil",
+                "drift",
+                "pulse",
+                "sway",
+                "shake"
+              ]
+            },
+            "poses_per_s": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "content": {
+          "enum": [
+            "still",
+            "loop",
+            "recording",
+            "footage"
+          ]
+        },
+        "font": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sfx": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "behind": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

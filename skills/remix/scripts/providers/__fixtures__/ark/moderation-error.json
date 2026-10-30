@@ -1,0 +1,34 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "something not allowed",
+      "aspect": "1:1"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
+        "headers": {
+          "authorization": "^Bearer test-ARK_API_KEY$"
+        }
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "error": {
+            "code": "InputTextSensitiveContentDetected",
+            "message": "The request failed because the input text may contain sensitive information.",
+            "type": "BadRequest"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

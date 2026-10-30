@@ -1,0 +1,14 @@
+{ "elements": [
+  { "id": "Title01.cover", "board": "Title01", "kind": "footage", "path": "cover", "in": 0, "out": 2.5, "box": [0.52, 0.12, 0.42, 0.76],
+    "enter": "fade", "exit": "cut", "idle": { "type": "none" }, "content": "footage", "sfx": null },
+  { "id": "Title01.kicker", "board": "Title01", "kind": "title", "path": "kicker", "in": 0.2, "out": 2.5, "box": [0.06, 0.3, 0.3, 0.05],
+    "enter": "fade", "exit": "cut", "idle": { "type": "none" }, "content": "still", "sfx": null },
+  { "id": "Title01.title", "board": "Title01", "kind": "title", "path": "title", "in": 0.4, "out": 2.5, "box": [0.06, 0.38, 0.4, 0.22],
+    "enter": "slide", "exit": "cut", "idle": { "type": "none" }, "content": "still", "sfx": "whoosh" },
+  { "id": "Points02.heading", "board": "Points02", "kind": "title", "path": "heading", "in": 2.5, "out": 5.0, "box": [0.08, 0.12, 0.6, 0.08],
+    "enter": "fade", "exit": "cut", "idle": { "type": "none" }, "content": "still", "sfx": null },
+  { "id": "Points02.points.0", "board": "Points02", "kind": "title", "path": "points.0.label", "in": 2.6, "out": 5.0, "box": [0.08, 0.3, 0.5, 0.07],
+    "enter": "pop", "exit": "cut", "idle": { "type": "none" }, "content": "still", "sfx": "pop" },
+  { "id": "Points02.points.1", "board": "Points02", "kind": "title", "path": "points.1.label", "in": 3.7, "out": 5.0, "box": [0.08, 0.42, 0.5, 0.07],
+    "enter": "pop", "exit": "cut", "idle": { "type": "none" }, "content": "still", "sfx": "pop" }
+] }

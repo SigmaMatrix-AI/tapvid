@@ -1,0 +1,24 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "coffee"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://pixabay.com/api/\\?"
+      },
+      "response": {
+        "status": 400,
+        "text": "[ERROR 400] Invalid or missing API key (https://pixabay.com/api/docs/)."
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

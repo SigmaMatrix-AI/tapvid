@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "analysis/shots.json",
+  "type": "object",
+  "required": [
+    "scenes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "palette": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "font": {
+      "type": "string",
+      "minLength": 1
+    },
+    "captions": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/scene"
+      }
+    }
+  },
+  "$defs": {
+    "box": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "scene": {
+      "type": "object",
+      "required": [
+        "name",
+        "role",
+        "shots",
+        "layers"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z]{0,23}$"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "end": {
+          "type": "number",
+          "minimum": 0
+        },
+        "background": {
+          "type": "string",
+          "minLength": 1
+        },
+        "layers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/layer"
+          }
+        },
+        "texts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "text",
+              "box",
+              "in",
+              "out"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "box": {
+                "$ref": "#/$defs/box"
+              },
+              "in": {
+                "type": "number",
+                "minimum": 0
+              },
+              "out": {
+                "type": "number",
+                "minimum": 0
+              },
+              "enter": {
+                "enum": [
+                  "pop",
+                  "fade",
+                  "cut"
+                ]
+              },
+              "color": {
+                "type": "string",
+                "minLength": 1
+              },
+              "plate": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "layer": {
+      "type": "object",
+      "required": [
+        "key",
+        "fill",
+        "box"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9]{0,23}$"
+        },
+        "fill": {
+          "enum": [
+            "avatar",
+            "pixel",
+            "screen",
+            "code"
+          ]
+        },
+        "box": {
+          "$ref": "#/$defs/box"
+        },
+        "shape": {
+          "enum": [
+            "rect",
+            "round",
+            "circle"
+          ]
+        },
+        "cutout": {
+          "type": "boolean"
+        },
+        "describe": {
+          "type": "string"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "kind",
+              "box"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$"
+              },
+              "kind": {
+                "enum": [
+                  "person",
+                  "product",
+                  "logo",
+                  "object",
+                  "animal",
+                  "other"
+                ]
+              },
+              "box": {
+                "$ref": "#/$defs/box"
+              },
+              "t": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

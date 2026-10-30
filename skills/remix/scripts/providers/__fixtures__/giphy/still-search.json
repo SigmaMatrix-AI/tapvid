@@ -1,0 +1,13 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "coffee"
+    }
+  },
+  "exchanges": [],
+  "expect": {
+    "status": "failed",
+    "error": "unsupported"
+  }
+}

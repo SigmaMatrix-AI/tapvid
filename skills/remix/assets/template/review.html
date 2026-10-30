@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Replica review</title>
+  <!-- Review shell (spec §7.1). review.mjs fills __DATA__ and places the built projects
+       (compare-project/, preview-project/), source.mp4, the BGM candidates, sfx/, and after the
+       render final/ and assets/ next to this file. D.stage 'clone' shows only the clone comparison.
+       Each project is another file:// origin, so the shell drives its window.scenePlayer through
+       the postMessage bridge in template.html and follows the clock it reports back. -->
+  <style>
+    :root { --bg: #0b0b10; --panel: #15151d; --line: #262633; --fg: #f2f2f5; --muted: #9a9aab; --accent: #6c8cff; --bad: #ff5c7a; --ok: #3dd68c; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", sans-serif; }
+    header { display: flex; align-items: center; gap: 18px; padding: 12px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    header h1 { margin: 0; font-size: 17px; font-weight: 650; }
+    nav { display: flex; gap: 6px; flex-wrap: wrap; }
+    nav button { white-space: nowrap; background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; cursor: pointer; font: inherit; }
+    nav button.on { color: var(--fg); background: var(--panel); border-color: var(--accent); }
+    .lang { margin-left: auto; display: flex; align-items: center; gap: 2px; color: var(--muted); }
+    .lang button { background: transparent; color: var(--muted); border: 0; padding: 4px 6px; cursor: pointer; font: inherit; }
+    .lang button.on { color: var(--fg); font-weight: 650; }
+    main { padding: 16px 18px 28px; max-width: 1500px; margin: 0 auto; }
+    .tab { display: none; flex-direction: column; gap: 12px; }
+    .tab.on { display: flex; }
+    .stages { display: flex; gap: 12px; }
+    .stage { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    [hidden] { display: none !important; }
+    .stage .label { color: var(--muted); font-size: 12px; }
+    #pre-stages .label { text-align: center; }
+    .screen { position: relative; overflow: hidden; border-radius: 10px; background: #000; }
+    .screen iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; pointer-events: none; }
+    .screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+    .bar { display: flex; align-items: center; gap: 10px; }
+    .bar button.play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; cursor: pointer; flex: none; }
+    .track { position: relative; flex: 1; height: 26px; display: flex; gap: 2px; cursor: pointer; }
+    .track .seg { position: relative; height: 100%; background: var(--panel); border-radius: 4px; overflow: hidden; }
+    .track .seg i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); opacity: .5; }
+    .track .seg b { position: absolute; left: 6px; top: 3px; font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .time { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 90px; text-align: right; }
+    .strip { position: relative; height: 34px; background: var(--panel); border-radius: 6px; }
+    .strip .cell { position: absolute; top: 4px; bottom: 4px; border-radius: 4px; font-size: 11px; display: flex; align-items: center; justify-content: center; color: #111; font-weight: 700; cursor: pointer; }
+    .strip .flag { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--bad); }
+    .panel { background: var(--panel); border-radius: 10px; padding: 10px 14px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .bad { color: var(--bad); }
+    .opts { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; color: var(--muted); font-size: 13px; }
+    .opts select { background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    td .sub { color: var(--muted); font-size: 12px; }
+    ul { margin: 4px 0; padding-left: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .group h3 { margin: 6px 0 8px; font-size: 14px; color: var(--muted); font-weight: 600; }
+    .card { background: var(--panel); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+    .card video, .card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #000; }
+    .card audio { width: 100%; margin-top: 8px; }
+    .card .meta { padding: 8px 10px; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+    .card .meta b { font-weight: 600; }
+    .card .id { color: #5d5d6e; font-size: 11px; word-break: break-all; }
+    .table-wrap { overflow-x: auto; }
+    @media (max-width: 900px) { .stages { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="title"></h1>
+    <nav>
+      <button data-tab="compare" data-t="tab.compare"></button>
+      <button data-tab="preview" class="on" data-t="tab.preview"></button>
+      <button data-tab="board" data-t="tab.board"></button>
+      <button data-tab="final" hidden data-t="tab.final"></button>
+      <button data-tab="assets" hidden data-t="tab.assets"></button>
+    </nav>
+    <div class="lang"><button data-lang="en">EN</button>|<button data-lang="zh">中文</button></div>
+  </header>
+  <main>
+    <section class="tab" id="tab-compare">
+      <div class="panel" id="cmp-summary" hidden></div>
+      <div class="stages">
+        <div class="stage"><div class="label" data-t="label.source"></div><div class="screen" id="src-screen"><video id="src" preload="auto" playsinline></video></div></div>
+        <div class="stage"><div class="label" data-t="label.template"></div><div class="screen" id="cmp-screen"><iframe id="cmp"></iframe></div></div>
+      </div>
+      <div class="bar"><button class="play" id="cmp-play">▶</button><div class="track" id="cmp-track"></div><div class="time" id="cmp-time"></div></div>
+      <div class="strip" id="cmp-strip"></div>
+      <div class="opts">
+        <label><input type="checkbox" id="cmp-slots" checked /> <span data-t="opt.slots"></span></label>
+        <label><input type="checkbox" id="cmp-sound" checked /> <span data-t="opt.sourceSound"></span></label>
+      </div>
+      <div class="panel" id="cmp-notes"></div>
+    </section>
+    <section class="tab on" id="tab-preview">
+      <div class="stages" id="pre-stages">
+        <div class="stage" id="ori-stage" hidden><div class="label" data-t="label.aligned"></div><div class="screen" id="ori-screen"><video id="ori" preload="auto" playsinline muted></video></div></div>
+        <div class="stage"><div class="label" id="pre-label" hidden data-t="label.replica"></div><div class="screen" id="pre-screen"><iframe id="pre"></iframe></div></div>
+      </div>
+      <div class="bar"><button class="play" id="pre-play">▶</button><div class="track" id="pre-track"></div><div class="time" id="pre-time"></div></div>
+      <div class="panel"><div id="pre-line"></div><div class="muted" id="pre-meta"></div></div>
+      <div class="opts">
+        <label id="bgm-wrap">BGM <select id="bgm"></select></label>
+        <label id="tts-wrap"><input type="checkbox" id="tts" checked /> <span id="tts-text" data-t="opt.tts"></span></label>
+        <label><input type="checkbox" id="slots" checked /> <span data-t="opt.slots"></span></label>
+        <label><input type="checkbox" id="prompts" /> <span data-t="opt.prompts"></span></label>
+        <label><input type="checkbox" id="ori-on" /> <span data-t="opt.compare"></span></label>
+        <label id="ori-sound-wrap" hidden><input type="checkbox" id="ori-sound" /> <span data-t="opt.sourceSound"></span></label>
+        <label id="sfx-wrap" hidden><input type="checkbox" id="sfx" checked /> <span data-t="opt.sfx"></span></label>
+      </div>
+      <div class="panel" id="pre-flags"></div>
+    </section>
+    <section class="tab" id="tab-board">
+      <div class="panel table-wrap" id="models-panel" hidden><table id="models"></table></div>
+      <div class="panel table-wrap"><table id="board"></table></div>
+      <div class="panel" id="totals"></div>
+    </section>
+    <section class="tab" id="tab-final">
+      <div class="stages">
+        <div class="stage"><div class="label" data-t="label.aligned"></div><div class="screen" id="fo-screen"><video id="fo" preload="auto" playsinline muted></video></div></div>
+        <div class="stage"><div class="label" data-t="label.final"></div><div class="screen" id="fin-screen"><video id="fin" preload="auto" playsinline controls></video></div></div>
+      </div>
+      <div class="opts">
+        <label id="ver-wrap"><span data-t="opt.version"></span> <select id="ver"></select></label>
+        <label><input type="checkbox" id="fo-sound" /> <span data-t="opt.sourceSound"></span></label>
+      </div>
+    </section>
+    <section class="tab" id="tab-assets">
+      <div class="panel table-wrap" id="spend"></div>
+      <div id="assets"></div>
+    </section>
+  </main>
+  <audio id="music" preload="auto" loop></audio>
+  <audio id="voice" preload="auto"></audio>
+  <script>window.__REVIEW__ = /*__DATA__*/;</script>
+  <script>
+  (function () {
+    var D = window.__REVIEW__;
+    var $ = function (id) { return document.getElementById(id); };
+    var W = D.canvas.width, H = D.canvas.height, clone = D.stage === 'clone';
+
+    // UI strings, English by default; the header switch picks the language per viewer (kept in
+    // localStorage when the browser allows). An array is [singular, plural] by vars.n. User content
+    // (narration, visuals, prompts, titles, file names) is shown as written.
+    var DICT = {
+      'title.clone': { en: 'Clone comparison', zh: '还原对照' },
+      'title.replica': { en: 'Replica review', zh: '复刻确认' },
+      'tab.compare': { en: 'Clone comparison', zh: '还原对照' },
+      'tab.preview': { en: 'Replica preview', zh: '复刻预览' },
+      'tab.board': { en: 'Storyboard & cost', zh: '分镜与费用' },
+      'tab.final': { en: 'Final cut', zh: '成片' },
+      'tab.assets': { en: 'Assets', zh: '素材' },
+      'label.source': { en: 'Original', zh: '原片' },
+      'label.template': { en: 'Template (example data + reference clips)', zh: '模版（示例数据 + 参考片段）' },
+      'label.aligned': { en: 'Original (aligned line by line; holds its last frame when its line is shorter)', zh: '原片（按每句旁白对齐，原片那句较短时停在末帧）' },
+      'label.replica': { en: 'Replica', zh: '复刻' },
+      'label.final': { en: 'Final cut', zh: '成片' },
+      'opt.slots': { en: 'Show component frames (red = media slot, blue = code component)', zh: '显示组件框（红 = 素材位，蓝 = 代码组件）' },
+      'opt.sourceSound': { en: 'Original sound', zh: '原片声音' },
+      'opt.tts': { en: 'Read narration aloud', zh: '朗读旁白' },
+      'opt.voice': { en: 'Play voice-over', zh: '播放配音' },
+      'opt.prompts': { en: 'Show prompts', zh: '显示提示词' },
+      'opt.compare': { en: 'Compare with original', zh: '原片对比' },
+      'opt.sfx': { en: 'Sound effects', zh: '音效' },
+      'opt.version': { en: 'Version', zh: '版本' },
+      'sum.boards': { en: ['{n} board', '{n} boards'], zh: '{n} 个 board' },
+      'sum.fidelity': { en: 'lowest score {min}, mean {mean}, {passed} / {samples} samples ≥ {threshold}', zh: '对照分最低 {min}，平均 {mean}，{passed} / {samples} 个采样 ≥ {threshold}' },
+      'sum.limits': { en: 'Known limits', zh: '已知局限' },
+      'cmp.none': { en: 'No comparison report yet (compare.mjs)', zh: '还没有对照报告（compare.mjs）' },
+      'cmp.noMatch': { en: 'no match in the original', zh: '原片无对应' },
+      'cmp.offset': { en: ['off by {n} frame', 'off by {n} frames'], zh: '偏差 {n} 帧' },
+      'cmp.score': { en: 'score {score}', zh: '对照分 {score}' },
+      'cmp.ok': { en: 'Every shot scores ≥ {threshold}; timing is within 1 frame', zh: '所有镜头对照分 ≥ {threshold}，时间轴偏差均在 1 帧内' },
+      'flag.over': { en: "Narration runs about {natural} s, over {board}'s {max} s limit", zh: '文案预计 {natural} 秒，超过 {board} 的上限 {max} 秒' },
+      'dur.voiced': { en: 'Durations: from the generated voice-over', zh: '时长：按已生成的配音' },
+      'dur.estimated': { en: 'Durations: estimated from the copy (Chinese 4.5 characters/s, English 15 characters/s)', zh: '时长：按文案预估（中文每秒 4.5 字，英文每秒 15 字符）' },
+      'dur.source': { en: 'Durations: as in the original timeline', zh: '时长：与原片时间轴一致' },
+      'bgm.candidate': { en: 'Candidate {n}', zh: '候选 {n}' },
+      'th.vendor': { en: 'Made by', zh: '由谁生成' },
+      'th.model': { en: 'Model', zh: '模型' },
+      'th.use': { en: 'Use', zh: '用途' },
+      'th.rate': { en: 'Unit price', zh: '单价' },
+      'th.usage': { en: 'Usage', zh: '用量' },
+      'th.subtotal': { en: 'Subtotal', zh: '小计' },
+      'th.count': { en: 'Count', zh: '数量' },
+      'th.spent': { en: 'Actual cost', zh: '实际花费' },
+      'th.role': { en: 'Role', zh: '作用' },
+      'th.visual': { en: 'Visual', zh: '画面' },
+      'th.narration': { en: 'Narration / copy', zh: '旁白 / 文案' },
+      'th.source': { en: 'Source', zh: '来源' },
+      'th.duration': { en: 'Duration', zh: '时长' },
+      'th.cost': { en: 'Estimated cost', zh: '预估费用' },
+      'total.estimated': { en: 'Estimated: ', zh: '预计：' },
+      'total.actual': { en: 'Actual: ', zh: '实际：' },
+      'total.none': { en: 'Not priced yet (no plan.json)', zh: '尚未估价（没有 plan.json）' },
+      'spend.none': { en: 'No generation records yet (tasks.json)', zh: '还没有生成记录（tasks.json）' },
+      'assets.none': { en: 'No assets yet', zh: '还没有素材' },
+      'asset.user': { en: 'Provided by you', zh: '你提供' },
+      'estimated': { en: ' (est.)', zh: '（估）' },
+      'current': { en: ' (current)', zh: '（当前）' },
+      'paren': { en: ' ({x})', zh: '（{x}）' },
+      'kv': { en: '{k}: {v}', zh: '{k}：{v}' },
+      'scene.n': { en: 'Scene {n}', zh: '第 {n} 段' },
+      'scene.shared': { en: 'Shared assets', zh: '通用素材' },
+      'scene.other': { en: 'Other', zh: '其他' },
+      'kind.image': { en: 'AI image', zh: 'AI 图片' },
+      'kind.video': { en: 'AI video', zh: 'AI 视频' },
+      'kind.avatar': { en: 'Digital human', zh: '数字人' },
+      'kind.ai': { en: 'AI material', zh: 'AI 素材' },
+      'kind.code': { en: 'Animation', zh: '动画' },
+      'kind.user': { en: 'Your material', zh: '你的素材' },
+      'kind.speech': { en: 'Voice-over', zh: '配音' },
+      'kind.music': { en: 'Music', zh: '配乐' },
+      'kind.replace': { en: 'Replacement', zh: '替换素材' },
+      'kind.keyframe': { en: 'First frame', zh: '首帧' },
+      'mode.reference': { en: 'Follows the original', zh: '参考原片' },
+      'mode.keyframe': { en: "From the original's first frame", zh: '参考原片首帧' },
+      'mode.text': { en: 'From the description', zh: '按描述生成' },
+      'unit.image': { en: 'image', zh: '张' },
+      'unit.second': { en: 'second', zh: '秒' },
+      'unit.1k chars': { en: '1k chars', zh: '千字符' },
+      'unit.request': { en: 'request', zh: '次' },
+      'count.image': { en: ['{n} image', '{n} images'], zh: '{n} 张' },
+      'count.second': { en: ['{n} second', '{n} seconds'], zh: '{n} 秒' },
+      'count.1k chars': { en: '{n} × 1k chars', zh: '{n} 千字符' },
+      'count.request': { en: ['{n} request', '{n} requests'], zh: '{n} 次' },
+      'count.item': { en: ['{n} item', '{n} items'], zh: '{n} 个' },
+      'note.warning': { en: '{detail}', zh: '{detail}' },
+      'note.estimate': { en: 'Estimate failed: {detail}', zh: '估价失败：{detail}' },
+      'note.sfx': { en: 'Sound effect {detail}', zh: '音效 {detail}' }
+    };
+    var LANG_KEY = 'tapvid-review-lang', LANG = 'en';
+    try { if (localStorage.getItem(LANG_KEY) === 'zh') LANG = 'zh'; } catch (e) {}
+    function T(key, vars) {
+      var v = DICT[key] ? DICT[key][LANG] : key;
+      if (Array.isArray(v)) v = vars && vars.n === 1 ? v[0] : v[1];
+      return v.replace(/\{(\w+)\}/g, function (m, k) { return vars && vars[k] != null ? vars[k] : m; });
+    }
+    // A code from review.mjs in words, or as written when the dictionary does not know it.
+    function label(prefix, code) { return DICT[prefix + '.' + code] ? T(prefix + '.' + code) : code; }
+    // Everything JS renders registers here and re-renders on a switch; media elements are never rebuilt.
+    var renders = [];
+    function onLang(fn) { renders.push(fn); }
+    function live(el, fn, attr) { onLang(function () { el[attr || 'textContent'] = fn(); }); }
+    onLang(function () {
+      $('title').textContent = D.title + ' · ' + T(clone ? 'title.clone' : 'title.replica');
+      document.title = $('title').textContent;
+    });
+
+    // One controller per embedded project: scaled iframe, segmented progress bar, clock from ticks.
+    function Player(name, project, onTick) {
+      var frame = $(name), screen = $(name + '-screen'), track = $(name + '-track'), fills = [];
+      var self = { t: 0, playing: false, total: project.total, scenes: project.scenes };
+      frame.width = W; frame.height = H; frame.src = project.src;
+      project.scenes.forEach(function (s) {
+        var seg = document.createElement('div'); seg.className = 'seg'; seg.style.flex = s.duration + ' 1 0';
+        var f = document.createElement('i'); var b = document.createElement('b'); b.textContent = (s.beat || s.board);
+        seg.appendChild(f); seg.appendChild(b); track.appendChild(seg); fills.push(f);
+      });
+      self.fit = function () {
+        var w = screen.clientWidth, k = w / W;
+        screen.style.height = H * k + 'px'; frame.style.transform = 'scale(' + k + ')';
+      };
+      self.send = function (msg) { msg.tapvid = 'cmd'; frame.contentWindow && frame.contentWindow.postMessage(msg, '*'); };
+      self.sceneAt = function (t) { var i = 0; project.scenes.forEach(function (s, k) { if (t >= s.start) i = k; }); return i; };
+      self.setPlaying = function (on) {
+        if (on && self.t >= self.total - 0.05) self.seek(0);
+        self.playing = on; $(name + '-play').textContent = on ? '❚❚' : '▶';
+        self.send({ cmd: on ? 'play' : 'pause' });
+      };
+      self.seek = function (t) { self.t = t; self.send({ cmd: 'seek', t: t }); onTick(self, true); };
+      $(name + '-play').onclick = function () { self.setPlaying(!self.playing); };
+      track.onclick = function (e) {
+        var r = track.getBoundingClientRect(); self.seek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * self.total);
+      };
+      window.addEventListener('message', function (e) {
+        if (e.source !== frame.contentWindow || !e.data || e.data.tapvid !== 'tick') return;
+        self.t = e.data.t;
+        project.scenes.forEach(function (s, k) {
+          fills[k].style.width = Math.max(0, Math.min(100, ((self.t - s.start) / s.duration) * 100)) + '%';
+        });
+        $(name + '-time').textContent = self.t.toFixed(1) + ' / ' + self.total.toFixed(1);
+        if (self.playing && self.t >= self.total - 0.02) self.setPlaying(false);
+        onTick(self, false);
+      });
+      return self;
+    }
+
+    // ---- Clone comparison: source video follows the template clock (one-frame tolerance).
+    var src = $('src');
+    src.src = D.compare.source;
+    var cmp = Player('cmp', D.compare, function (p, jumped) {
+      if (!src.duration) return;
+      if (jumped || Math.abs(src.currentTime - p.t) > 1 / D.fps) src.currentTime = Math.min(p.t, src.duration);
+      if (p.playing && src.paused) src.play().catch(function () {});
+      if (!p.playing && !src.paused) src.pause();
+    });
+    $('cmp-sound').onchange = function () { src.muted = !$('cmp-sound').checked; };
+    if (D.clone) {
+      var f = D.clone.fidelity, lim = D.clone.limits || [], cn = D.clone.notes || [];
+      $('cmp-summary').hidden = false;
+      onLang(function () {
+        $('cmp-summary').innerHTML = '<b>' + esc(D.title) + '</b> · ' + T('sum.boards', { n: D.clone.boards }) + ' · '
+          + (f ? T('sum.fidelity', { min: f.min.toFixed(2), mean: f.mean.toFixed(2), passed: f.passed, samples: f.samples, threshold: D.compare.threshold }) : T('cmp.none'))
+          + (lim.length ? '<div class="muted">' + T('sum.limits') + '</div><ul>' + lim.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '')
+          + (cn.length ? '<ul>' + cn.map(function (x) { return '<li class="muted">' + esc(noteText(x)) + '</li>'; }).join('') + '</ul>' : '');
+      });
+    }
+    function cmpOverlay() { cmp.send({ cmd: 'overlay', slots: $('cmp-slots').checked, prompts: false }); }
+    $('cmp-slots').onchange = cmpOverlay;
+    $('cmp').addEventListener('load', cmpOverlay);
+    $('cmp').addEventListener('load', function () { cmp.send({ cmd: 'lang', lang: LANG }); });
+    var strip = $('cmp-strip');
+    D.compare.shots.forEach(function (s) {
+      var c = document.createElement('div'); c.className = 'cell';
+      c.style.left = (s.start / cmp.total * 100) + '%'; c.style.width = 'calc(' + ((s.end - s.start) / cmp.total * 100) + '% - 2px)';
+      c.style.background = s.score === null ? '#555' : s.score < D.compare.threshold ? 'var(--bad)' : 'var(--ok)';
+      c.textContent = s.score === null ? '—' : s.score.toFixed(2);
+      c.title = s.board + (s.reason ? ' · ' + s.reason : '');
+      c.onclick = function () { cmp.seek(s.start); };
+      strip.appendChild(c);
+    });
+    D.compare.timing.filter(function (x) { return x.flagged; }).forEach(function (x) {
+      var f = document.createElement('div'); f.className = 'flag'; f.style.left = (x.at / cmp.total * 100) + '%';
+      live(f, function () { return x.deltaFrames === null ? T('kv', { k: x.label, v: x.note || T('cmp.noMatch') }) : x.label + ' ' + T('cmp.offset', { n: x.deltaFrames }); }, 'title');
+      strip.appendChild(f);
+    });
+    onLang(function () {
+      var notes = [];
+      D.compare.shots.filter(function (s) { return s.score !== null && s.score < D.compare.threshold; }).forEach(function (s) {
+        var at = esc(s.board) + ' ' + s.start.toFixed(2) + 's ' + T('cmp.score', { score: s.score.toFixed(2) });
+        notes.push('<li class="bad">' + (s.reason ? T('kv', { k: at, v: esc(s.reason) }) : at) + '</li>');
+      });
+      D.compare.timing.filter(function (x) { return x.flagged; }).forEach(function (x) {
+        notes.push('<li class="bad">' + esc(x.label) + ' @' + x.at.toFixed(2) + 's ' + (x.deltaFrames === null ? esc(x.note || T('cmp.noMatch')) : T('cmp.offset', { n: x.deltaFrames })) + '</li>');
+      });
+      $('cmp-notes').innerHTML = D.compare.shots.length || D.compare.timing.length
+        ? (notes.length ? '<ul>' + notes.join('') + '</ul>' : '<span class="muted">' + T('cmp.ok', { threshold: D.compare.threshold }) + '</span>')
+        : '<span class="muted">' + T('cmp.none') + '</span>';
+    });
+
+    if (D.preview) {
+      // ---- Replica preview: BGM candidates, speechSynthesis narration per scene, slot overlays.
+      var music = $('music'), bgmSel = $('bgm'), spoken = -1;
+      var pre = Player('pre', D.preview, function (p, jumped) {
+        var i = p.sceneAt(p.t), s = D.preview.scenes[i];
+        preLine();
+        if (music.src) {
+          if (jumped || Math.abs(music.currentTime - p.t % (music.duration || 1e9)) > 0.3) music.currentTime = p.t % (music.duration || 1e9);
+          if (p.playing && music.paused) music.play().catch(function () {});
+          if (!p.playing && !music.paused) music.pause();
+        }
+        follow(p, jumped);
+        if (voiced) { voice(p, i, jumped); return; }
+        if (jumped || !p.playing) { spoken = -1; if (window.speechSynthesis) speechSynthesis.cancel(); }
+        else if (i !== spoken) { spoken = i; speak(s.narration); }
+      });
+      function preLine() {
+        var i = pre.sceneAt(pre.t), s = D.preview.scenes[i];
+        $('pre-line').textContent = (i + 1) + ' · ' + (s.beat || s.board) + (s.flag ? ' · ⚠ ' + flagText(s.flag) : '');
+        $('pre-meta').textContent = s.narration || '';
+      }
+      onLang(preLine);
+      $('pre').addEventListener('load', function () { pre.send({ cmd: 'lang', lang: LANG }); });
+      var bgm = D.preview.bgm || [];
+      if (!bgm.length) $('bgm-wrap').style.display = 'none';
+      bgm.forEach(function (c, i) {
+        var o = document.createElement('option'); o.value = i;
+        live(o, function () { return (i + 1) + '. ' + (typeof c.title === 'string' ? c.title : T('bgm.candidate', { n: c.title.index })) + (c.source ? T('paren', { x: c.source }) : ''); });
+        bgmSel.appendChild(o);
+      });
+      if (bgm.length) { bgmSel.value = Math.min(D.preview.selected || 0, bgm.length - 1); music.src = bgm[bgmSel.value].path; }
+      bgmSel.onchange = function () { music.src = bgm[bgmSel.value].path; music.currentTime = pre.t; if (pre.playing) music.play().catch(function () {}); };
+      // Generated narration plays as recorded; speech synthesis only stands in before it exists.
+      var voiced = D.preview.scenes.every(function (s) { return s.audio; }), vEl = $('voice'), vScene = -1;
+      function voice(p, i, jumped) {
+        var s = D.preview.scenes[i], at = p.t - s.start - (s.audioOffset || 0);
+        if (i !== vScene) { vScene = i; vEl.src = s.audio; jumped = true; }
+        var run = p.playing && $('tts').checked && at >= 0;
+        if (run && (jumped || Math.abs(vEl.currentTime - at) > 0.15)) vEl.currentTime = Math.max(0, at);
+        if (run && vEl.paused) vEl.play().catch(function () {});
+        if (!run && !vEl.paused) vEl.pause();
+      }
+      var narrated = D.preview.mode === 'narration' && (voiced || window.speechSynthesis);
+      if (!narrated) $('tts-wrap').style.display = 'none';
+      if (voiced) $('tts-text').dataset.t = 'opt.voice';
+      function speak(text) {
+        if (!narrated || !$('tts').checked || !text) return;
+        speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(text); u.lang = /^zh/.test(D.language) ? 'zh-CN' : D.language;
+        speechSynthesis.speak(u);
+      }
+      // Compare with original: the source follows the replica line by line. Each preview segment maps to the
+      // compare segment with the same key in the same scene; the source plays that line from its
+      // start and holds on its last frame when the replica's line runs longer.
+      var ori = $('ori');
+      function sourceAt(scenes, t) {
+        var i = 0; scenes.forEach(function (s, k) { if (t >= s.start) i = k; });
+        var ps = scenes[i], cs = D.compare.scenes[i];
+        if (!cs) return { t: D.compare.total, hold: true };
+        var lt = t - ps.start, segs = ps.segments || [], k = 0;
+        segs.forEach(function (g, j) { if (lt >= g.start) k = j; });
+        var g = segs[k], cg = g && (cs.segments || []).filter(function (x) { return x.key === g.key; })[0];
+        var from = cg ? cs.start + cg.start : cs.start, off = g && cg ? lt - g.start : lt;
+        var next = cg ? (cs.segments || []).filter(function (x) { return x.start > cg.start; })[0] : null;
+        var end = next ? cs.start + next.start : cs.start + cs.duration;
+        var at = from + off, last = end - 1 / D.fps;
+        return at >= last ? { t: last, hold: true } : { t: at, hold: false };
+      }
+      function follow(p, jumped) {
+        if (!$('ori-on').checked || !ori.duration) return;
+        var m = sourceAt(D.preview.scenes, p.t), run = p.playing && !m.hold;
+        if (jumped || !run || Math.abs(ori.currentTime - m.t) > 0.15) ori.currentTime = Math.min(m.t, ori.duration);
+        if (run && ori.paused) ori.play().catch(function () {});
+        if (!run && !ori.paused) ori.pause();
+      }
+      $('ori-on').onchange = function () {
+        var on = $('ori-on').checked;
+        $('ori-stage').hidden = !on; $('pre-label').hidden = !on; $('ori-sound-wrap').hidden = !on;
+        if (on && !ori.src) ori.src = D.compare.source;
+        if (!on) ori.pause();
+        fit(); follow(pre, true);
+      };
+      $('ori-sound').onchange = function () { ori.muted = !$('ori-sound').checked; };
+      ori.addEventListener('loadedmetadata', function () { follow(pre, true); });
+      function overlay() { pre.send({ cmd: 'overlay', slots: $('slots').checked, prompts: $('prompts').checked }); }
+      $('slots').onchange = overlay; $('prompts').onchange = overlay;
+      $('pre').addEventListener('load', overlay);
+      var flags = D.preview.scenes.filter(function (s) { return s.flag; });
+      onLang(function () {
+        $('pre-flags').innerHTML = flags.length
+          ? '<ul>' + flags.map(function (s) { return '<li class="bad">' + T('kv', { k: esc(s.key), v: esc(flagText(s.flag)) }) + '</li>'; }).join('') + '</ul>'
+          : '<span class="muted">' + T(voiced ? 'dur.voiced' : D.preview.mode === 'narration' ? 'dur.estimated' : 'dur.source') + '</span>';
+      });
+
+      // ---- Storyboard & cost: cost per vendor / model, then per row.
+      var models = D.storyboard.models || [];
+      $('models-panel').hidden = !models.length;
+      onLang(function () {
+        $('models').innerHTML = '<tr><th>' + T('th.vendor') + '</th><th>' + T('th.model') + '</th><th>' + T('th.use') + '</th><th>' + T('th.rate') + '</th><th>' + T('th.usage') + '</th><th>' + T('th.subtotal') + '</th></tr>' + models.map(modelRow).join('')
+          + '<tr><td colspan="6"><b>' + T('total.estimated') + D.storyboard.totals.map(function (x) { return esc(x.provider) + ' ' + esc(x.text); }).join(' · ') + '</b></td></tr>';
+        var head = '<tr><th>#</th><th>' + T('th.role') + '</th><th>' + T('th.visual') + '</th><th>' + T('th.narration') + '</th><th>' + T('th.source') + '</th><th>' + T('th.vendor') + '</th><th>' + T('th.duration') + '</th><th>' + T('th.cost') + '</th></tr>';
+        $('board').innerHTML = head + D.storyboard.rows.map(function (r) {
+          return '<tr><td>' + r.n + '</td><td>' + esc(r.beat) + '</td><td>' + esc(r.visual) + '</td><td>' + esc(r.narration) + '</td><td>'
+            + r.slots.map(function (s) { return esc(label('kind', s.kind)) + (s.mode ? '<div class="sub">' + esc(label('mode', s.mode)) + '</div>' : ''); }).join('<br>') + '</td><td>'
+            + r.slots.map(function (s) { return esc(s.provider || '—') + (s.model ? '<div class="sub">' + esc(s.model) + '</div>' : ''); }).join('<br>') + '</td><td>'
+            + r.duration.toFixed(1) + 's</td><td>' + esc(r.cost || '0') + '</td></tr>';
+        }).join('');
+        var t = D.storyboard.totals.map(function (x) { return esc(x.provider) + ' ' + esc(x.text); });
+        $('totals').innerHTML = (t.length ? T('total.estimated') + t.join(' · ') : '<span class="muted">' + T('total.none') + '</span>')
+          + (D.storyboard.notes.length ? '<ul>' + D.storyboard.notes.map(function (n) { return '<li class="muted">' + esc(noteText(n)) + '</li>'; }).join('') + '</ul>' : '');
+      });
+
+      // ---- Final cut: the final cut drives the original line by line, like Compare with original in the preview.
+      if (D.final) {
+        var fin = $('fin'), fo = $('fo'), ver = $('ver'), vers = D.final.versions;
+        document.querySelector('nav button[data-tab="final"]').hidden = false;
+        vers.forEach(function (v, i) {
+          var o = document.createElement('option'); o.value = i; ver.appendChild(o);
+          live(o, function () { return v.label + (v.current ? T('current') : ''); });
+        });
+        if (vers.length < 2) $('ver-wrap').hidden = true;
+        fin.src = vers[0].path; fo.src = D.compare.source;
+        var finFollow = function (jumped) {
+          if (!fo.duration) return;
+          var m = sourceAt(D.preview.scenes, fin.currentTime), run = !fin.paused && !m.hold;
+          if (jumped || !run || Math.abs(fo.currentTime - m.t) > 0.15) fo.currentTime = Math.min(m.t, fo.duration);
+          if (run && fo.paused) fo.play().catch(function () {});
+          if (!run && !fo.paused) fo.pause();
+        };
+        var finLoop = function () { finFollow(false); if (!fin.paused) requestAnimationFrame(finLoop); };
+        fin.addEventListener('play', finLoop);
+        fin.addEventListener('pause', function () { finFollow(true); });
+        fin.addEventListener('seeked', function () { finFollow(true); });
+        fo.addEventListener('loadedmetadata', function () { finFollow(true); });
+        $('fo-sound').onchange = function () { fo.muted = !$('fo-sound').checked; };
+        ver.onchange = function () {
+          var t = fin.currentTime;
+          fin.src = vers[ver.value].path;
+          fin.addEventListener('loadedmetadata', function () { fin.currentTime = Math.min(t, fin.duration); }, { once: true });
+        };
+      }
+
+      // ---- Assets: every generated asset and user file, grouped by scene, with what it cost.
+      if (D.assets) {
+        document.querySelector('nav button[data-tab="assets"]').hidden = false;
+        var sp = D.assets.spend;
+        onLang(function () {
+          $('spend').innerHTML = sp.models.length
+            ? '<table><tr><th>' + T('th.vendor') + '</th><th>' + T('th.model') + '</th><th>' + T('th.use') + '</th><th>' + T('th.count') + '</th><th>' + T('th.spent') + '</th></tr>'
+              + sp.models.map(function (m) { return '<tr><td>' + esc(m.vendor) + '</td><td>' + esc(m.model) + '</td><td>' + esc(label('kind', m.capability)) + '</td><td>' + esc(countText(m)) + '</td><td>' + esc(subtotalText(m)) + '</td></tr>'; }).join('')
+              + '<tr><td colspan="5"><b>' + T('total.actual') + sp.totals.map(function (x) { return esc(x.provider) + ' ' + esc(x.text); }).join(' · ') + '</b></td></tr></table>'
+            : '<span class="muted">' + T('spend.none') + '</span>';
+        });
+        // Built once as elements (cards hold playable media); only their words re-render.
+        var box = $('assets');
+        D.assets.groups.forEach(function (g) {
+          var group = node('div', 'group', box);
+          live(node('h3', '', group), function () { return g.scene ? T('scene.n', { n: g.scene }) : g.scene === 0 ? T('scene.shared') : T('scene.other'); });
+          var grid = node('div', 'grid', group);
+          g.cards.forEach(function (c) {
+            var card = node('div', 'card', grid), name = function () { return assetLabel(c.label); };
+            if (c.kind === 'video') { var v = node('video', '', card); v.src = c.path; v.muted = true; v.controls = true; v.playsInline = true; v.preload = 'metadata'; }
+            if (c.kind === 'image') { var img = node('img', '', card); img.src = c.path; img.loading = 'lazy'; live(img, name, 'alt'); }
+            var meta = node('div', 'meta', card);
+            live(node('b', '', meta), name);
+            if (c.visual) node('span', 'muted', meta).textContent = c.visual;
+            live(node('span', '', meta), function () {
+              return (c.user ? T('asset.user') : c.vendor || '—') + (c.model ? ' · ' + c.model : '') + (c.cost ? ' · ' + c.cost + (c.estimated ? T('estimated') : '') : '');
+            });
+            if (c.kind === 'audio') { var a = node('audio', '', meta); a.src = c.path; a.controls = true; a.preload = 'none'; }
+            node('span', 'id', meta).textContent = c.id;
+          });
+        });
+        if (!D.assets.groups.length) live(node('span', 'muted', box), function () { return T('assets.none'); });
+      }
+    }
+
+    function modelRow(m) {
+      var rate = m.price ? m.price + ' / ' + label('unit', m.unit) + (m.resolution ? T('paren', { x: m.resolution }) : '') : '—';
+      return '<tr><td>' + esc(m.vendor) + '</td><td>' + esc(m.model) + '</td><td>' + esc(label('kind', m.capability)) + '</td><td>' + esc(rate) + '</td><td>' + esc(countText(m)) + '</td><td>' + esc(subtotalText(m)) + '</td></tr>';
+    }
+    // A model row's count in its unit ("12 images", or the Chinese count); "items" when it has no unit price.
+    function countText(m) {
+      var key = 'count.' + (m.unit || 'item');
+      return DICT[key] ? T(key, { n: m.count }) : m.count + ' ' + m.unit;
+    }
+    function subtotalText(m) { return m.subtotal + (m.estimated ? T('estimated') : ''); }
+    function noteText(n) { return DICT['note.' + n.code] ? T('note.' + n.code, { detail: n.detail }) : n.detail; }
+    function flagText(f) { return T('flag.' + f.code, { natural: f.natural.toFixed(1), board: f.board, max: f.max }); }
+    // An asset's { scene, role, subject?, keyframe? } in words: "Scene 1 · AI video · First frame".
+    function assetLabel(l) {
+      return [l.scene ? T('scene.n', { n: l.scene }) : null, label('kind', l.role), l.keyframe ? T('kind.keyframe') : null, l.subject]
+        .filter(function (x) { return x; }).join(' · ');
+    }
+    function node(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.className = cls; parent.appendChild(e); return e; }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+    // Sound effects the template page reports (data-sfx elements appearing while playing), unless
+    // that tab's sound is off: Original sound for the clone comparison, Sound effects for the replica preview.
+    var sfxKinds = Object.keys(D.sfx || {});
+    $('sfx-wrap').hidden = !sfxKinds.length;
+    window.addEventListener('message', function (e) {
+      if (!e.data || e.data.tapvid !== 'sfx' || !(D.sfx || {})[e.data.kind]) return;
+      var on = e.source === $('cmp').contentWindow ? $('cmp-sound').checked : e.source === $('pre').contentWindow ? D.preview && $('sfx').checked : false;
+      if (!on) return;
+      var a = new Audio(D.sfx[e.data.kind]);
+      a.volume = Math.max(0, Math.min(1, (typeof e.data.gain === 'number' ? e.data.gain : 1) * 0.5));
+      a.play().catch(function () {});
+    });
+
+    var players = { compare: cmp, preview: pre };
+    function show(tab) {
+      document.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === tab); });
+      document.querySelectorAll('.tab').forEach(function (s) { s.classList.toggle('on', s.id === 'tab-' + tab); });
+      Object.keys(players).forEach(function (k) { if (k !== tab && players[k] && players[k].playing) players[k].setPlaying(false); });
+      if (tab !== 'final' && !$('fin').paused) $('fin').pause();
+      fit();
+    }
+    document.querySelectorAll('nav button').forEach(function (b) { b.onclick = function () { show(b.dataset.tab); }; });
+    if (clone) {
+      document.querySelectorAll('nav button').forEach(function (b) { b.hidden = b.dataset.tab !== 'compare'; });
+      show('compare');
+    }
+    function fitCompare(h) {
+      var tc = $('tab-compare'), w = h * W / H;
+      tc.style.maxWidth = (window.innerWidth <= 900 ? w : 2 * w + 12) + 'px'; tc.style.margin = '0 auto';
+      cmp.fit();
+      $('src-screen').style.height = $('cmp-screen').style.height;
+    }
+    function fit() {
+      var ph = $('pre-screen'), maxH = window.innerHeight * 0.62, os = $('ori-screen');
+      // Clone comparison fills the window height: both screens, the bar, the strip and the options stay
+      // in view without the user zooming out. Fit to the full height, then shrink by what overflows.
+      fitCompare(window.innerHeight - document.querySelector('header').offsetHeight - 60);
+      if (window.innerWidth > 900 && $('tab-compare').classList.contains('on')) {
+        var over = document.querySelector('#tab-compare .opts').getBoundingClientRect().bottom + 16 - window.innerHeight;
+        if (over > 0) fitCompare(Math.max(240, $('cmp-screen').offsetHeight - over));
+      }
+      ['fin-screen', 'fo-screen'].forEach(function (id) {
+        var el = $(id); el.style.aspectRatio = W + ' / ' + H; el.style.maxWidth = (maxH * W / H) + 'px'; el.style.width = '100%'; el.style.margin = '0 auto';
+      });
+      if (!pre) return;
+      ph.style.width = ''; ph.style.margin = '';
+      pre.fit();
+      if (parseFloat(ph.style.height) > maxH) { ph.style.width = (maxH * W / H) + 'px'; ph.style.margin = '0 auto'; pre.fit(); }
+      os.style.width = ph.style.width; os.style.margin = ph.style.margin; os.style.height = ph.style.height;
+    }
+    // Language switch: static labels by data-t, then everything JS rendered; the embedded projects
+    // translate their overlays. Playback is untouched.
+    function setLang(lang) {
+      LANG = lang;
+      document.documentElement.lang = lang;
+      try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+      document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = T(el.dataset.t); });
+      document.querySelectorAll('.lang button').forEach(function (b) { b.classList.toggle('on', b.dataset.lang === lang); });
+      renders.forEach(function (fn) { fn(); });
+      cmp.send({ cmd: 'lang', lang: lang });
+      if (pre) pre.send({ cmd: 'lang', lang: lang });
+      fit();
+    }
+    document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { setLang(b.dataset.lang); }; });
+    setLang(LANG);
+    window.addEventListener('resize', fit);
+    fit();
+  })();
+  </script>
+</body>
+</html>

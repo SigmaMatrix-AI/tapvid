@@ -1,0 +1,52 @@
+{
+  "capability": "speech.voices",
+  "request": {
+    "params": {
+      "language": "en",
+      "gender": "female"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/voices/list?language=en&page_size=100&gender=female",
+        "headers": {
+          "authorization": "Bearer test-TAPVID_API_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "voices": [
+            {
+              "voiceId": "V9x",
+              "displayNameZh": "艾米",
+              "displayNameEn": "Amy",
+              "language": "en",
+              "gender": "female",
+              "age": "adult",
+              "sampleAudioUrl": "https://cdn.tapvid.ai/v/amy.mp3",
+              "isRecommended": true
+            },
+            {
+              "voiceId": "V8y",
+              "displayNameEn": "Beth",
+              "language": "en",
+              "gender": "female",
+              "sampleAudioUrl": null,
+              "isRecommended": false
+            }
+          ],
+          "page": 1,
+          "pageSize": 100,
+          "total": 2
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 2
+  }
+}

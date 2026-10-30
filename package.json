@@ -1,0 +1,16 @@
+{
+  "name": "tapvid",
+  "private": true,
+  "type": "module",
+  "description": "Development and tests for TapVid skills.",
+  "scripts": {
+    "test": "node --test",
+    "coverage": "node --test --experimental-test-coverage",
+    "test:full": "node tests/tools/require-runtime.mjs && node --test",
+    "fixtures": "node tests/tools/generate-fixtures.mjs"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  }
+}

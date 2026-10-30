@@ -1,0 +1,33 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api-singapore.klingai.com/text-to-video/kling-4.0",
+        "headers": {
+          "authorization": "^Bearer eyJ[\\w-]+\\.[\\w-]+\\.[\\w-]+$"
+        }
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "code": 1301,
+          "message": "Trigger the content security policy of the platform",
+          "request_id": "req-2"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

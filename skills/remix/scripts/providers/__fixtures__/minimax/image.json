@@ -1,0 +1,60 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A man in a white t-shirt on Venice Beach",
+      "aspect": "16:9",
+      "refs": [
+        {
+          "file": "_assets/tiny.png",
+          "role": "subject"
+        }
+      ]
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v1/image_generation",
+        "bodyIncludes": {
+          "model": "image-01",
+          "aspect_ratio": "16:9",
+          "response_format": "base64",
+          "subject_reference": [
+            {
+              "type": "character"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "id": "03ff",
+          "data": {
+            "image_base64": [
+              "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAABAAAAAQBPJcTWAAAAGUlEQVR4nGM0qTjIQApgIUn1qIZRDUNKAwC8pQGrMCj8wAAAAABJRU5ErkJggg=="
+            ]
+          },
+          "metadata": {
+            "success_count": "1",
+            "failed_count": "0"
+          },
+          "base_resp": {
+            "status_code": 0,
+            "status_msg": "success"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

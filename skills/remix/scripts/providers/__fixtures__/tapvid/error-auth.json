@@ -1,0 +1,28 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple",
+      "aspect": "1:1"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/image"
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "error": "unauthorized",
+          "request_id": "r-1"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}
