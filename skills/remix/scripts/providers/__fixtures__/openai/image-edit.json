@@ -1,0 +1,47 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "Put the bottle on a beach",
+      "aspect": "9:16",
+      "refs": [
+        {
+          "file": "_assets/tiny.png",
+          "role": "subject"
+        }
+      ]
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/edits",
+        "bodyIncludes": {
+          "model": "gpt-image-2.5-flare",
+          "size": "1024x1824",
+          "image[]": "<file image/png>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "created": 1,
+          "data": [
+            {
+              "b64_json": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAABAAAAAQBPJcTWAAAAGUlEQVR4nGM0qTjIQApgIUn1qIZRDUNKAwC8pQGrMCj8wAAAAABJRU5ErkJggg=="
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "template/refs/refs.json",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "required": [
+      "window"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "clip": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "frame": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "window": {
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "crop": {
+        "type": "array",
+        "minItems": 4,
+        "maxItems": 4,
+        "items": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "subjects": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "kind",
+            "image"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "enum": [
+                "person",
+                "product",
+                "logo",
+                "object",
+                "animal",
+                "other"
+              ]
+            },
+            "image": {
+              "type": "string",
+              "minLength": 1
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "describe": {
+        "type": "string"
+      }
+    }
+  }
+}

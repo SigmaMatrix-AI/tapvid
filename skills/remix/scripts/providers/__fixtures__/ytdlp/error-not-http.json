@@ -1,0 +1,6 @@
+{
+  "capability": "video.download",
+  "request": { "params": { "url": "file:///etc/hosts" } },
+  "exchanges": [],
+  "expect": { "status": "failed", "error": "invalid" }
+}

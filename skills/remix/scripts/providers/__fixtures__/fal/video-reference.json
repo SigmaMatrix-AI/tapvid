@@ -1,0 +1,157 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "@Video1 camera motion with the person in @Image1",
+      "aspect": "16:9",
+      "duration_s": 5,
+      "refs": [
+        {
+          "file": "_assets/tiny.png",
+          "role": "subject"
+        }
+      ],
+      "ref_videos": [
+        {
+          "file": "_assets/tiny.mp4",
+          "role": "motion"
+        }
+      ]
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+        "bodyIncludes": {
+          "content_type": "image/png"
+        },
+        "headers": {
+          "authorization": "Key test-FAL_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "upload_url": "https://upload.fal.media/u/i1?sig=1",
+          "file_url": "https://v3.fal.media/files/i1"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "url": "https://upload.fal.media/u/i1?sig=1",
+        "headers": {
+          "content-type": "image/png"
+        }
+      },
+      "response": {
+        "status": 200,
+        "text": ""
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+        "bodyIncludes": {
+          "content_type": "video/mp4"
+        },
+        "headers": {
+          "authorization": "Key test-FAL_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "upload_url": "https://upload.fal.media/u/v1?sig=1",
+          "file_url": "https://v3.fal.media/files/v1"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "url": "https://upload.fal.media/u/v1?sig=1",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      },
+      "response": {
+        "status": 200,
+        "text": ""
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/reference-to-video",
+        "bodyIncludes": {
+          "aspect_ratio": "16:9",
+          "image_urls": [
+            "https://v3.fal.media/files/i1"
+          ],
+          "video_urls": [
+            "https://v3.fal.media/files/v1"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "request_id": "r3",
+          "response_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r3",
+          "status_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r3/status",
+          "cancel_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r3/cancel"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r3/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "COMPLETED"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r3"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "video": {
+            "url": "https://v3.fal.media/files/out3.mp4"
+          },
+          "seed": 1
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://v3.fal.media/files/out3.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

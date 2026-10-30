@@ -1,0 +1,32 @@
+{
+  "capability": "music.search",
+  "request": {
+    "params": {
+      "query": "ambient"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api\\.jamendo\\.com/v3\\.0/tracks/\\?"
+      },
+      "response": {
+        "json": {
+          "headers": {
+            "status": "failed",
+            "code": 5,
+            "error_message": "Your credential is not authorized.",
+            "warnings": "",
+            "results_count": 0
+          },
+          "results": []
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

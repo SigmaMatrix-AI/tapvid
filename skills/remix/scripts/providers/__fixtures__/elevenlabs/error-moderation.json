@@ -1,0 +1,30 @@
+{
+  "capability": "music.generate",
+  "request": {
+    "params": {
+      "prompt": "In the style of a famous band",
+      "duration_s": 10
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/music"
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "detail": {
+            "status": "bad_prompt",
+            "message": "The prompt violates our Terms of Service: it references copyrighted material"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

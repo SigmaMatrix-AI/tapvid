@@ -1,0 +1,30 @@
+{
+  "capability": "speech.synthesize",
+  "request": {
+    "params": {
+      "text": "Hi.",
+      "voice": "male-qn-qingse"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v1/t2a_v2"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "base_resp": {
+            "status_code": 1008,
+            "status_msg": "insufficient balance"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "quota"
+  }
+}

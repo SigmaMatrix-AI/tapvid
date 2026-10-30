@@ -1,0 +1,27 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple",
+      "aspect": "1:1"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://queue.fal.run/bytedance/seedream/v5/pro/text-to-image"
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "detail": "Invalid Key Authorization header format"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

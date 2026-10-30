@@ -1,0 +1,109 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 3,
+      "min_short_edge": 600
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/text-to-video",
+        "bodyIncludes": {
+          "prompt": "A slow push-in on a cup of coffee",
+          "duration": "4",
+          "resolution": "720p",
+          "aspect_ratio": "16:9",
+          "generate_audio": false
+        },
+        "headers": {
+          "authorization": "Key test-FAL_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "request_id": "r1",
+          "response_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r1",
+          "status_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r1/status",
+          "cancel_url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r1/cancel"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r1/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "IN_QUEUE",
+          "queue_position": 2
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r1/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "IN_PROGRESS"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r1/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "COMPLETED"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedance-2.5/requests/r1"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "video": {
+            "url": "https://v3.fal.media/files/out1.mp4",
+            "content_type": "video/mp4"
+          },
+          "seed": 7
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://v3.fal.media/files/out1.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "capability": "speech.synthesize",
+  "request": {
+    "params": {
+      "text": "Hello from TapVid.",
+      "voice": "marin",
+      "style": "warm and upbeat",
+      "speed": 1.1
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/speech",
+        "bodyIncludes": {
+          "model": "gpt-4o-mini-tts",
+          "voice": "marin",
+          "input": "Hello from TapVid.",
+          "instructions": "warm and upbeat",
+          "speed": 1.1,
+          "response_format": "mp3"
+        }
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp3",
+        "headers": {
+          "content-type": "audio/mpeg"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "audio/mpeg"
+      }
+    ]
+  }
+}

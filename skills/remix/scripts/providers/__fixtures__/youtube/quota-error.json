@@ -1,0 +1,35 @@
+{
+  "capability": "video.search",
+  "request": {
+    "params": {
+      "query": "launch"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://www.googleapis.com/youtube/v3/search\\?"
+      },
+      "response": {
+        "status": 403,
+        "json": {
+          "error": {
+            "code": 403,
+            "message": "The request cannot be completed because you have exceeded your quota.",
+            "errors": [
+              {
+                "reason": "quotaExceeded",
+                "domain": "youtube.quota"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "quota"
+  }
+}

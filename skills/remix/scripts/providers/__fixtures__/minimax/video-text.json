@@ -1,0 +1,122 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A boy playing basketball by the sea",
+      "aspect": "16:9",
+      "duration_s": 4.5,
+      "min_short_edge": 1080
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v2/video_generation",
+        "bodyIncludes": {
+          "model": "MiniMax-H3",
+          "content": [
+            {
+              "type": "text",
+              "text": "A boy playing basketball by the sea"
+            }
+          ],
+          "resolution": "2K",
+          "duration": 5,
+          "ratio": "16:9"
+        },
+        "headers": {
+          "authorization": "Bearer test-MINIMAX_API_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task_id": "424010985738629"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.minimax.io/v2/query/video_generation/424010985738629"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task": {
+            "id": "424010985738629",
+            "model": "MiniMax-H3",
+            "status": "queued",
+            "task_type": "generation",
+            "modality": "video"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.minimax.io/v2/query/video_generation/424010985738629"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task": {
+            "id": "424010985738629",
+            "model": "MiniMax-H3",
+            "status": "running",
+            "task_type": "generation",
+            "modality": "video"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.minimax.io/v2/query/video_generation/424010985738629"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "task": {
+            "id": "424010985738629",
+            "model": "MiniMax-H3",
+            "status": "succeeded",
+            "task_type": "generation",
+            "modality": "video",
+            "content": {
+              "url": "https://cdn.example.com/h3-out.mp4?Expires=1"
+            },
+            "resolution": "2K",
+            "duration": 5,
+            "ratio": "16:9",
+            "usage": {
+              "total_seconds": 5,
+              "output_seconds": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://cdn\\.example\\.com/h3-out\\.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

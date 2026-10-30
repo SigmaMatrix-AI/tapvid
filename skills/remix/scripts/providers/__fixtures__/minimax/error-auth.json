@@ -1,0 +1,30 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple",
+      "aspect": "1:1"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.minimax.io/v1/image_generation"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "base_resp": {
+            "status_code": 1004,
+            "status_msg": "login fail: Please carry the API secret key in the 'Authorization' field of the request header"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

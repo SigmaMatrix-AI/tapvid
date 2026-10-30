@@ -1,0 +1,43 @@
+{
+  "capability": "avatar.list",
+  "request": {
+    "params": {
+      "gender": "male"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/avatars/list"
+      },
+      "response": {
+        "status": 200,
+        "json": [
+          {
+            "avatarId": "pub-leo",
+            "name": "Leo",
+            "gender": "male",
+            "isPublic": true,
+            "tags": [],
+            "previewImageUrl": "https://cdn.tapvid.ai/a/leo.png",
+            "previewVideoUrl": null
+          },
+          {
+            "avatarId": "pub-mia",
+            "name": "Mia",
+            "gender": "female",
+            "isPublic": true,
+            "tags": [],
+            "previewImageUrl": "https://cdn.tapvid.ai/a/mia.png",
+            "previewVideoUrl": null
+          }
+        ]
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 1
+  }
+}

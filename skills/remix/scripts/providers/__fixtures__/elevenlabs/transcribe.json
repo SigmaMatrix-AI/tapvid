@@ -1,0 +1,75 @@
+{
+  "capability": "speech.transcribe",
+  "request": {
+    "params": {
+      "file": "_assets/tiny.wav"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/speech-to-text",
+        "bodyIncludes": {
+          "model_id": "scribe_v2",
+          "timestamps_granularity": "word",
+          "file": "<file audio/wav>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "language_code": "eng",
+          "language_probability": 0.98,
+          "text": "Hello there. How are you?",
+          "words": [
+            {
+              "text": "Hello",
+              "type": "word",
+              "start": 0.0,
+              "end": 0.4
+            },
+            {
+              "text": " ",
+              "type": "spacing",
+              "start": 0.4,
+              "end": 0.45
+            },
+            {
+              "text": "there.",
+              "type": "word",
+              "start": 0.45,
+              "end": 0.9
+            },
+            {
+              "text": "How",
+              "type": "word",
+              "start": 1.2,
+              "end": 1.4
+            },
+            {
+              "text": "are",
+              "type": "word",
+              "start": 1.45,
+              "end": 1.6
+            },
+            {
+              "text": "you?",
+              "type": "word",
+              "start": 1.65,
+              "end": 2.0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "application/json"
+      }
+    ]
+  }
+}

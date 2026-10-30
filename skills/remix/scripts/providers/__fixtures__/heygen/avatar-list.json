@@ -1,0 +1,47 @@
+{
+  "capability": "avatar.list",
+  "request": {
+    "params": {
+      "gender": "female"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api.heygen.com/v3/avatars/looks\\?limit=50$",
+        "headers": {
+          "x-api-key": "test-HEYGEN_API_KEY"
+        }
+      },
+      "response": {
+        "json": {
+          "data": [
+            {
+              "id": "look_7f3a",
+              "name": "Anna in office",
+              "gender": "female",
+              "preview_image_url": "https://files.heygen.ai/look/anna.webp",
+              "avatar_type": "studio_avatar",
+              "default_voice_id": "voice_1bd0"
+            },
+            {
+              "id": "look_9c21",
+              "name": "Tom casual",
+              "gender": "male",
+              "preview_image_url": "https://files.heygen.ai/look/tom.webp",
+              "avatar_type": "studio_avatar",
+              "default_voice_id": null
+            }
+          ],
+          "has_more": false,
+          "next_token": null
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 1
+  }
+}

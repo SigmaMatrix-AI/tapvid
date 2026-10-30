@@ -1,0 +1,33 @@
+{
+  "capability": "avatar.generate",
+  "request": {
+    "params": {
+      "mode": "audio",
+      "aspect": "1:1",
+      "portrait": "_assets/tiny.png",
+      "audio": "_assets/tiny.mp3"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.d-id.com/audios",
+        "headers": {
+          "authorization": "^Basic test-DID_API_KEY$"
+        }
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "kind": "AuthorizationError",
+          "description": "user unauthenticated"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

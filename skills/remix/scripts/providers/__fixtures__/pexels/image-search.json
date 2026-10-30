@@ -1,0 +1,41 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "coffee",
+      "limit": 1
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api.pexels.com/v1/search\\?query=coffee&per_page=1$",
+        "headers": {
+          "authorization": "test-PEXELS_API_KEY"
+        }
+      },
+      "response": {
+        "json": {
+          "photos": [
+            {
+              "id": 2014422,
+              "width": 3024,
+              "height": 3024,
+              "url": "https://www.pexels.com/photo/2014422/",
+              "photographer": "Joey Farina",
+              "src": {
+                "original": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg",
+                "large2x": "https://images.pexels.com/photos/2014422/large2x.jpeg"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 1
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "capability": "avatar.generate",
+  "request": {
+    "params": {
+      "mode": "tts",
+      "aspect": "16:9",
+      "avatar_id": "look_7f3a",
+      "script": "Hi"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.heygen.com/v3/videos",
+        "headers": {
+          "x-api-key": "test-HEYGEN_API_KEY"
+        }
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "error": {
+            "code": "unauthorized",
+            "message": "Invalid API key",
+            "param": null
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

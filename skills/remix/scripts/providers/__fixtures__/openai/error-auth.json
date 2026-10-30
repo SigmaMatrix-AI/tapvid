@@ -1,0 +1,31 @@
+{
+  "capability": "speech.synthesize",
+  "request": {
+    "params": {
+      "text": "Hi.",
+      "voice": "cedar"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/speech"
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "error": {
+            "message": "Incorrect API key provided",
+            "type": "invalid_request_error",
+            "code": "invalid_api_key"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

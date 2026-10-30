@@ -1,0 +1,107 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5,
+      "min_short_edge": 1080
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api-singapore.klingai.com/text-to-video/kling-4.0",
+        "bodyIncludes": {
+          "settings": {
+            "duration": 5,
+            "resolution": "1080p",
+            "aspect_ratio": "16:9",
+            "sound": "off"
+          }
+        },
+        "headers": {
+          "authorization": "^Bearer eyJ[\\w-]+\\.[\\w-]+\\.[\\w-]+$"
+        }
+      },
+      "response": {
+        "json": {
+          "code": 0,
+          "message": "SUCCEED",
+          "request_id": "req-1",
+          "data": {
+            "task_id": "kt_1",
+            "status": "submitted"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api-singapore.klingai.com/tasks\\?task_ids=kt_1$",
+        "headers": {
+          "authorization": "^Bearer eyJ[\\w-]+\\.[\\w-]+\\.[\\w-]+$"
+        }
+      },
+      "response": {
+        "json": {
+          "code": 0,
+          "message": "SUCCEED",
+          "data": [
+            {
+              "task_id": "kt_1",
+              "status": "processing"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api-singapore.klingai.com/tasks\\?task_ids=kt_1$"
+      },
+      "response": {
+        "json": {
+          "code": 0,
+          "message": "SUCCEED",
+          "data": [
+            {
+              "task_id": "kt_1",
+              "status": "succeeded",
+              "outputs": [
+                {
+                  "type": "video",
+                  "url": "https://v15-kling.klingai.com/out.mp4",
+                  "duration": "5"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://v15-kling.klingai.com/out.mp4"
+      },
+      "response": {
+        "file": "_assets/tiny.mp4",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

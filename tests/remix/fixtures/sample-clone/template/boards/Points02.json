@@ -1,0 +1,17 @@
+{
+  "schema": {
+    "fields": [
+      { "key": "heading", "type": "string", "required": true, "maxChars": 30, "desc": "Section heading naming what the points are about; ≤30 chars" },
+      { "key": "points", "type": "object[]", "required": true, "minItems": 2, "maxItems": 4, "desc": "The points in speaking order",
+        "fields": [
+          { "key": "label", "type": "string", "required": true, "maxChars": 40, "desc": "The point as a short phrase; ≤40 chars" },
+          { "key": "say", "type": "narration", "required": true, "maxChars": 80, "desc": "The line the voice reads for this point" }
+        ] }
+    ]
+  },
+  "meta": { "displays": "a heading and points appearing as each is spoken", "useWhen": ["listing benefits"], "dontUseWhen": ["the opening — use Title01"], "minDuration": 2, "maxDuration": 20, "durationModel": "segments" },
+  "example_data": { "heading": "Why teams switch", "points": [ { "label": "Drafts in seconds", "say": "It drafts in seconds." }, { "label": "Replies in your voice", "say": "And replies in your voice." } ] },
+  "example_segments": [ { "key": "points.0.say", "start": 0, "end": 1.2 }, { "key": "points.1.say", "start": 1.2, "end": 2.5 } ],
+  "example_duration_ms": 2500,
+  "preview_t": 0.9
+}

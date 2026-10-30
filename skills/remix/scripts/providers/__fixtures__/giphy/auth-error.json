@@ -1,0 +1,27 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "mind blown",
+      "animated": true
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api\\.giphy\\.com/v1/gifs/search\\?"
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "message": "No API key found in request."
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

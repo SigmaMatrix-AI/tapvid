@@ -1,0 +1,119 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "Put the bottle on a beach",
+      "aspect": "1:1",
+      "refs": [
+        {
+          "file": "_assets/tiny.png",
+          "role": "subject"
+        }
+      ]
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+        "bodyIncludes": {
+          "content_type": "image/png"
+        },
+        "headers": {
+          "authorization": "Key test-FAL_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "upload_url": "https://upload.fal.media/u/i2?sig=1",
+          "file_url": "https://v3.fal.media/files/i2"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "PUT",
+        "url": "https://upload.fal.media/u/i2?sig=1",
+        "headers": {
+          "content-type": "image/png"
+        }
+      },
+      "response": {
+        "status": 200,
+        "text": ""
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://queue.fal.run/bytedance/seedream/v5/pro/edit",
+        "bodyIncludes": {
+          "image_urls": [
+            "https://v3.fal.media/files/i2"
+          ],
+          "image_size": {
+            "width": 1080,
+            "height": 1080
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "request_id": "r5",
+          "response_url": "https://queue.fal.run/bytedance/seedream/requests/r5",
+          "status_url": "https://queue.fal.run/bytedance/seedream/requests/r5/status",
+          "cancel_url": "https://queue.fal.run/bytedance/seedream/requests/r5/cancel"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedream/requests/r5/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "COMPLETED"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedream/requests/r5"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "images": [
+            {
+              "url": "https://v3.fal.media/files/img2.png"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://v3.fal.media/files/img2.png"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.png"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

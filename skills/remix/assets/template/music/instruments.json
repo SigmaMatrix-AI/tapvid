@@ -1,0 +1,26 @@
+{
+  "source": "https://github.com/sgossner/VSCO-2-CE (CC0-1.0)",
+  "maxSamples": 14,
+  "instruments": {
+    "violins":        { "dir": "Strings/Violin Section/susVib", "prefer": ["_v2", "_v1"], "release": 1.6 },
+    "violins-pizz":   { "dir": "Strings/Violin Section/Pizz", "match": "_rr1", "prefer": ["_v2_", "_v1_"], "release": 0.4 },
+    "cellos":         { "dir": "Strings/Cello Section/susvib", "prefer": ["_v1_", "_v3_"], "release": 1.6 },
+    "contrabass-pizz":{ "dir": "Strings/Solo Contrabass", "match": "Pizz_.*_rr1", "prefer": ["_v3_", "_v1_"], "release": 0.5 },
+    "harp":           { "dir": "Strings/Harp", "prefer": ["_mf", "_f", "_p"], "release": 2.5 },
+    "piano":          { "dir": "Keys/Upright Piano", "match": "Player_dyn2_rr1_", "pianoMap": true, "release": 1.2 },
+    "flute":          { "dir": "Woodwinds/Flute/susvib", "prefer": ["_v1_"], "release": 0.8 },
+    "horn":           { "dir": "Brass/F Horn/sus", "prefer": ["_v2_", "_v1_"], "release": 1.0 },
+    "marimba":        { "dir": "Percussion/Marimba", "prefer": ["_loud_01"], "release": 1.0 },
+    "glockenspiel":   { "dir": "Percussion/Glock", "prefer": ["_medium_"], "release": 2.0 }
+  },
+  "oneShots": {
+    "bass-drum":   "Percussion/BDrumNewhit_v5_rr1_Sum.wav",
+    "snare":       "Percussion/Snare2-HitSN_v5_rr1_Sum.wav",
+    "crash":       "Percussion/cymbal-crash1_mf_rr1.wav",
+    "triangle":    "Percussion/Triangle3-Hit_v1_rr1_Sum.wav",
+    "tambourine":  "Percussion/Tamb1-Shake_v1_rr1_Sum.wav",
+    "sleighbells": "Percussion/Sleighbells_Hit_v1_rr1_Mid.wav",
+    "gong":        "Percussion/gongHit_mf.wav",
+    "cymbal-swell":"Percussion/susCymb1-cresc-Median_v1.wav"
+  }
+}

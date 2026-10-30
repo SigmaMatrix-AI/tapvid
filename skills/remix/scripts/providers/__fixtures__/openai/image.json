@@ -1,0 +1,45 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple",
+      "aspect": "16:9",
+      "min_short_edge": 900
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "bodyIncludes": {
+          "model": "gpt-image-2.5-flare",
+          "size": "1824x1024",
+          "quality": "medium"
+        },
+        "headers": {
+          "authorization": "Bearer test-OPENAI_API_KEY"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "created": 1,
+          "data": [
+            {
+              "b64_json": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAAABAAAAAQBPJcTWAAAAGUlEQVR4nGM0qTjIQApgIUn1qIZRDUNKAwC8pQGrMCj8wAAAAABJRU5ErkJggg=="
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

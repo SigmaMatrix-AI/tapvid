@@ -1,0 +1,49 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.dev.runwayml.com/v1/text_to_video",
+        "bodyIncludes": {
+          "model": "gen4.5",
+          "ratio": "1280:720"
+        },
+        "headers": {
+          "authorization": "^Bearer test-RUNWAYML_API_SECRET$",
+          "x-runway-version": "2024-11-06"
+        }
+      },
+      "response": {
+        "json": {
+          "id": "task-m1"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.dev.runwayml.com/v1/tasks/task-m1"
+      },
+      "response": {
+        "json": {
+          "id": "task-m1",
+          "status": "FAILED",
+          "failure": "The prompt was flagged by content moderation.",
+          "failureCode": "SAFETY.INPUT.TEXT"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

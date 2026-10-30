@@ -1,0 +1,14 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "mind blown",
+      "animated": true
+    }
+  },
+  "exchanges": [],
+  "expect": {
+    "status": "failed",
+    "error": "unsupported"
+  }
+}

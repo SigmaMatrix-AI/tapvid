@@ -1,0 +1,38 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "coffee",
+      "orientation": "portrait",
+      "limit": 3
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://pixabay.com/api/\\?key=test-PIXABAY_API_KEY&q=coffee&per_page=3&safesearch=true&image_type=photo&orientation=vertical$"
+      },
+      "response": {
+        "json": {
+          "total": 1,
+          "totalHits": 1,
+          "hits": [
+            {
+              "id": 195893,
+              "pageURL": "https://pixabay.com/photos/coffee-195893/",
+              "largeImageURL": "https://pixabay.com/get/195893_1280.jpg",
+              "imageWidth": 3200,
+              "imageHeight": 4800,
+              "user": "Josch13"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 1
+  }
+}

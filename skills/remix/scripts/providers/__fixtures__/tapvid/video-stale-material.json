@@ -1,0 +1,169 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "Use video 1 for camera motion; replace the person with image 1",
+      "aspect": "16:9",
+      "duration_s": 5,
+      "refs": [
+        {
+          "file": "_assets/tiny.png",
+          "role": "subject"
+        }
+      ],
+      "ref_videos": [
+        {
+          "file": "_assets/tiny.mp4",
+          "role": "motion"
+        }
+      ]
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/materials?usage=asset",
+        "bodyIncludes": {
+          "file": "<file image/png>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "materialId": "M1",
+          "type": "document"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/materials?usage=asset",
+        "bodyIncludes": {
+          "file": "<file video/mp4>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "materialId": "M2",
+          "type": "document"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/video"
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "error": "invalid_request",
+          "request_id": "r1",
+          "message": "Reference video length could not be read; please upload it again"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/materials?usage=asset",
+        "bodyIncludes": {
+          "file": "<file image/png>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "materialId": "M3",
+          "type": "document"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/materials?usage=asset",
+        "bodyIncludes": {
+          "file": "<file video/mp4>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "materialId": "M4",
+          "type": "document"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/video",
+        "bodyIncludes": {
+          "model": "seedance-2.5",
+          "references": [
+            {
+              "kind": "image",
+              "documentId": "M3"
+            },
+            {
+              "kind": "video",
+              "documentId": "M4"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 202,
+        "json": {
+          "taskId": "T2",
+          "kind": "video",
+          "status": "new"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T2"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T2",
+          "kind": "video",
+          "status": "completed",
+          "document": {
+            "documentId": "D0c1",
+            "name": "out",
+            "type": "mp4",
+            "status": "completed",
+            "url": "https://cdn.tapvid.ai/x/ref.mp4",
+            "durationMs": 5000
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://cdn.tapvid.ai/x/ref.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

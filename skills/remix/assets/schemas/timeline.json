@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "source/timeline.json",
+  "type": "object",
+  "required": [
+    "fps",
+    "duration_s",
+    "frames",
+    "shots"
+  ],
+  "properties": {
+    "fps": {
+      "type": "number"
+    },
+    "duration_s": {
+      "type": "number",
+      "minimum": 0
+    },
+    "frames": {
+      "type": "integer"
+    },
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "index",
+          "start",
+          "end",
+          "start_frame",
+          "end_frame"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          },
+          "start_frame": {
+            "type": "integer"
+          },
+          "end_frame": {
+            "type": "integer"
+          },
+          "transition_in": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "cut",
+                  "soft"
+                ]
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+          "transition_out": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "cut",
+                  "soft"
+                ]
+              },
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "motion_peaks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "t",
+          "frame"
+        ],
+        "properties": {
+          "t": {
+            "type": "number",
+            "minimum": 0
+          },
+          "frame": {
+            "type": "integer"
+          },
+          "shot": {
+            "type": "integer"
+          },
+          "strength": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "words": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "text",
+          "start",
+          "end"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "beats": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "bpm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "times": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

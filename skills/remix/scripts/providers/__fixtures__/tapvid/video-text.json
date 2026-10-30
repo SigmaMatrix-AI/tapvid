@@ -1,0 +1,96 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A cup of coffee, slow push-in",
+      "aspect": "16:9",
+      "duration_s": 4,
+      "min_short_edge": 700
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/video",
+        "bodyIncludes": {
+          "prompt": "A cup of coffee, slow push-in",
+          "model": "seedance-2.0-fast",
+          "aspectRatio": "16:9",
+          "resolution": "720p",
+          "duration": "5",
+          "idempotencyKey": "^replay-1-[0-9a-f]{16}$"
+        },
+        "headers": {
+          "authorization": "Bearer test-TAPVID_API_KEY"
+        }
+      },
+      "response": {
+        "status": 202,
+        "json": {
+          "taskId": "T1",
+          "kind": "video",
+          "status": "new"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T1"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T1",
+          "kind": "video",
+          "status": "generating",
+          "queuePosition": null
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T1"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T1",
+          "kind": "video",
+          "status": "completed",
+          "chargedCredits": 90,
+          "document": {
+            "documentId": "D0c1",
+            "name": "out",
+            "type": "mp4?sig=1",
+            "status": "completed",
+            "url": "https://cdn.tapvid.ai/x/out.mp4?sig=1",
+            "durationMs": 5000,
+            "width": 1280,
+            "height": 720
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://cdn\\.tapvid\\.ai/x/out\\.mp4"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.mp4"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

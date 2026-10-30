@@ -1,0 +1,86 @@
+{
+  "capability": "video.search",
+  "request": {
+    "params": {
+      "query": "coffee",
+      "orientation": "landscape",
+      "duration": "short",
+      "limit": 2
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api.pexels.com/videos/search\\?query=coffee&per_page=2&orientation=landscape$",
+        "headers": {
+          "authorization": "test-PEXELS_API_KEY"
+        }
+      },
+      "response": {
+        "json": {
+          "page": 1,
+          "per_page": 2,
+          "total_results": 2,
+          "videos": [
+            {
+              "id": 3195394,
+              "width": 3840,
+              "height": 2160,
+              "duration": 13,
+              "url": "https://www.pexels.com/video/coffee-3195394/",
+              "image": "https://images.pexels.com/videos/3195394/thumb.jpeg",
+              "user": {
+                "id": 1,
+                "name": "Jane Doe",
+                "url": "https://www.pexels.com/@jane"
+              },
+              "video_files": [
+                {
+                  "id": 1,
+                  "quality": "uhd",
+                  "file_type": "video/mp4",
+                  "width": 3840,
+                  "height": 2160,
+                  "link": "https://videos.pexels.com/video-files/3195394/uhd.mp4"
+                },
+                {
+                  "id": 2,
+                  "quality": "hd",
+                  "file_type": "video/mp4",
+                  "width": 1920,
+                  "height": 1080,
+                  "link": "https://videos.pexels.com/video-files/3195394/hd.mp4"
+                },
+                {
+                  "id": 3,
+                  "quality": "sd",
+                  "file_type": "video/mp4",
+                  "width": 640,
+                  "height": 360,
+                  "link": "https://videos.pexels.com/video-files/3195394/sd.mp4"
+                }
+              ]
+            },
+            {
+              "id": 2,
+              "width": 1280,
+              "height": 720,
+              "duration": 600,
+              "url": "https://www.pexels.com/video/long-2/",
+              "image": null,
+              "user": {
+                "name": "X"
+              },
+              "video_files": []
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "items": 1
+  }
+}

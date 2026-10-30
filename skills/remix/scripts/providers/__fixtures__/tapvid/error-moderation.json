@@ -1,0 +1,48 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A famous person dancing",
+      "aspect": "16:9",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/video"
+      },
+      "response": {
+        "status": 202,
+        "json": {
+          "taskId": "T6",
+          "kind": "video",
+          "status": "new"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://mcp.tapvid.ai/api/public/v1/assets/task?task_id=T6"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "taskId": "T6",
+          "kind": "video",
+          "status": "failed",
+          "error": {
+            "code": "render_failed",
+            "message": "The prompt was blocked by the content moderation policy"
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "capability": "avatar.generate",
+  "request": {
+    "params": {
+      "mode": "tts",
+      "aspect": "1:1",
+      "portrait": "_assets/tiny.png",
+      "script": "Hello from TapVid."
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.d-id.com/images",
+        "bodyIncludes": {
+          "image": "<file image/png>"
+        },
+        "headers": {
+          "authorization": "^Basic test-DID_API_KEY$"
+        }
+      },
+      "response": {
+        "status": 201,
+        "json": {
+          "id": "img_1",
+          "url": "s3://d-id-images-prod/auth0|abc/img_1/tiny.png"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.d-id.com/talks",
+        "bodyIncludes": {
+          "source_url": "s3://d-id-images-prod/auth0|abc/img_1/tiny.png",
+          "script": {
+            "type": "text",
+            "input": "Hello from TapVid.",
+            "provider": {
+              "type": "microsoft",
+              "voice_id": "en-US-JennyNeural"
+            }
+          }
+        },
+        "headers": {
+          "authorization": "^Basic test-DID_API_KEY$"
+        }
+      },
+      "response": {
+        "status": 201,
+        "json": {
+          "id": "tlk_abc",
+          "object": "talk",
+          "created_at": "2026-10-27T10:00:00.000Z",
+          "status": "created"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.d-id.com/talks/tlk_abc",
+        "headers": {
+          "authorization": "^Basic test-DID_API_KEY$"
+        }
+      },
+      "response": {
+        "json": {
+          "id": "tlk_abc",
+          "status": "started"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.d-id.com/talks/tlk_abc"
+      },
+      "response": {
+        "json": {
+          "id": "tlk_abc",
+          "status": "done",
+          "result_url": "https://d-id-talks-prod.s3.us-west-2.amazonaws.com/tlk_abc.mp4",
+          "duration": 1.6
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://d-id-talks-prod.s3.us-west-2.amazonaws.com/tlk_abc.mp4"
+      },
+      "response": {
+        "file": "_assets/tiny.mp4",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

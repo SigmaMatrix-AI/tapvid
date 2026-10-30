@@ -1,0 +1,94 @@
+{
+  "capability": "avatar.generate",
+  "request": {
+    "params": {
+      "mode": "tts",
+      "aspect": "16:9",
+      "avatar_id": "look_7f3a",
+      "script": "Hello from TapVid.",
+      "voice": "voice_1bd0"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.heygen.com/v3/videos",
+        "bodyIncludes": {
+          "type": "avatar",
+          "avatar_id": "look_7f3a",
+          "script": "Hello from TapVid.",
+          "voice_id": "voice_1bd0",
+          "aspect_ratio": "16:9"
+        },
+        "headers": {
+          "x-api-key": "test-HEYGEN_API_KEY"
+        }
+      },
+      "response": {
+        "json": {
+          "data": {
+            "video_id": "vid_xyz789",
+            "status": "waiting",
+            "output_format": "mp4"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.heygen.com/v3/videos/vid_xyz789",
+        "headers": {
+          "x-api-key": "test-HEYGEN_API_KEY"
+        }
+      },
+      "response": {
+        "json": {
+          "data": {
+            "id": "vid_xyz789",
+            "status": "processing",
+            "video_url": null,
+            "duration": null
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.heygen.com/v3/videos/vid_xyz789"
+      },
+      "response": {
+        "json": {
+          "data": {
+            "id": "vid_xyz789",
+            "status": "completed",
+            "video_url": "https://files.heygen.ai/video/vid_xyz789.mp4",
+            "duration": 3.2
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://files.heygen.ai/video/vid_xyz789.mp4"
+      },
+      "response": {
+        "file": "_assets/tiny.mp4",
+        "headers": {
+          "content-type": "video/mp4"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "video/mp4"
+      }
+    ]
+  }
+}

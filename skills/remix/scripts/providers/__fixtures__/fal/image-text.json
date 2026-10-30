@@ -1,0 +1,83 @@
+{
+  "capability": "image.generate",
+  "request": {
+    "params": {
+      "prompt": "A red apple on a white table",
+      "aspect": "16:9",
+      "min_short_edge": 1000
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://queue.fal.run/bytedance/seedream/v5/pro/text-to-image",
+        "bodyIncludes": {
+          "image_size": {
+            "width": 1920,
+            "height": 1080
+          },
+          "num_images": 1
+        }
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "request_id": "r4",
+          "response_url": "https://queue.fal.run/bytedance/seedream/requests/r4",
+          "status_url": "https://queue.fal.run/bytedance/seedream/requests/r4/status",
+          "cancel_url": "https://queue.fal.run/bytedance/seedream/requests/r4/cancel"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedream/requests/r4/status"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "status": "COMPLETED"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://queue.fal.run/bytedance/seedream/requests/r4"
+      },
+      "response": {
+        "status": 200,
+        "json": {
+          "images": [
+            {
+              "url": "https://v3.fal.media/files/img.png",
+              "width": 1920,
+              "height": 1080,
+              "content_type": "image/png"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://v3.fal.media/files/img.png"
+      },
+      "response": {
+        "status": 200,
+        "file": "_assets/tiny.png"
+      }
+    }
+  ],
+  "expect": {
+    "status": "completed",
+    "files": [
+      {
+        "mime": "image/png"
+      }
+    ]
+  }
+}

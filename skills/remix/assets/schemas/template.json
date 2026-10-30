@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "template/template.json",
+  "type": "object",
+  "required": [
+    "version",
+    "id",
+    "title",
+    "canvas",
+    "fps",
+    "category",
+    "audio",
+    "boards"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "canvas": {
+      "type": "object",
+      "required": [
+        "width",
+        "height"
+      ],
+      "properties": {
+        "width": {
+          "enum": [
+            1920,
+            1080
+          ]
+        },
+        "height": {
+          "enum": [
+            1080,
+            1920
+          ]
+        }
+      }
+    },
+    "fps": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 120
+    },
+    "category": {
+      "enum": [
+        "avatar",
+        "no_avatar"
+      ]
+    },
+    "audio": {
+      "type": "object",
+      "required": [
+        "source_mode"
+      ],
+      "properties": {
+        "source_mode": {
+          "enum": [
+            "narration",
+            "music-only",
+            "silent"
+          ]
+        },
+        "captions": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bpm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "duration_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "boards": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "type",
+          "duration"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 0
+          },
+          "params": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

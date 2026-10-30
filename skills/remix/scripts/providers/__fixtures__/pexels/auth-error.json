@@ -1,0 +1,26 @@
+{
+  "capability": "image.search",
+  "request": {
+    "params": {
+      "query": "coffee"
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "^https://api.pexels.com/v1/search"
+      },
+      "response": {
+        "status": 401,
+        "json": {
+          "error": "Unauthorized"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "auth"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "capability": "video.generate",
+  "request": {
+    "params": {
+      "prompt": "A slow push-in on a cup of coffee",
+      "aspect": "16:9",
+      "duration_s": 5
+    }
+  },
+  "exchanges": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/bytedance/seedance-1-pro/predictions",
+        "headers": {
+          "authorization": "^Bearer test-REPLICATE_API_TOKEN$"
+        }
+      },
+      "response": {
+        "status": 201,
+        "json": {
+          "id": "rp_m1",
+          "status": "starting"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.replicate.com/v1/predictions/rp_m1"
+      },
+      "response": {
+        "json": {
+          "id": "rp_m1",
+          "status": "failed",
+          "error": "The input or output was flagged as sensitive. Please try again with different inputs. (E005)"
+        }
+      }
+    }
+  ],
+  "expect": {
+    "status": "failed",
+    "error": "moderation"
+  }
+}
