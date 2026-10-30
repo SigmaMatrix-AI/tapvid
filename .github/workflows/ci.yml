@@ -13,14 +13,16 @@ jobs:
         node: [22, 24]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
-    env:
-      TAPVID_VIDEO_HOME: ${{ runner.temp }}/tapvid test home
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/tapvid browsers
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: ${{ matrix.node }}
+      - name: Configure isolated runtime paths
+        shell: bash
+        run: |
+          echo "TAPVID_VIDEO_HOME=$RUNNER_TEMP/tapvid test home" >> "$GITHUB_ENV"
+          echo "PLAYWRIGHT_BROWSERS_PATH=$RUNNER_TEMP/tapvid browsers" >> "$GITHUB_ENV"
       - name: Install FFmpeg (macOS)
         if: runner.os == 'macOS'
         run: brew list ffmpeg >/dev/null 2>&1 || brew install ffmpeg
