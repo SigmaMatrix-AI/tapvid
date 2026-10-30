@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Step 3 at the low tier (references/specs/video-clone-tiers.spec.md §3.2): analysis/shots.json → a complete
+// Step 3 at the low tier: analysis/shots.json → a complete
 // template, then its reference clips and board previews.
 //   node quick.mjs <project> [--title "…"] [--force] [--skip-build]
 // Refuses to replace an existing template unless --force (a high-tier template is hours of work).

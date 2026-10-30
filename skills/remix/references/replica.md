@@ -179,7 +179,7 @@ Rules: one action per shot; at most two hands in frame and say what each holds; 
 in words even when an image is given; describe what to show, never "do not show the old product"; keep areas
 the board covers with text empty ("leave the left third clear").
 
-**Low tier** (`references/specs/video-clone-tiers.spec.md`): the reference clip is the layer's region of the original
+**Low tier**: the reference clip is the layer's region of the original
 frame (the whole frame for a full-frame layer), with its people, burned-in captions and stickers, so the prompt
 describes the full new picture for that region and takes only the motion from the video. Pin `provider: "tapvid"`, `model: "minimax-h3"` when TapVid is ready; images are the
 replacements (the user's photo, a product shot, a screenshot of their app):

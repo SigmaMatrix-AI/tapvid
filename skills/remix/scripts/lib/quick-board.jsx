@@ -1,6 +1,6 @@
 import React from "react";
 
-// Source of the generic low-tier board (references/specs/video-clone-tiers.spec.md §3.2); quick.mjs fills in
+// Source of the generic low-tier board; quick.mjs fills in
 // the board name and LAYOUT per scene. The scene is the original's layout rebuilt as layers, back to
 // front, then the on-screen texts on top.
 // LAYOUT.layers: one per region — the prop that fills it (a video for avatar / pixel / screen, a React

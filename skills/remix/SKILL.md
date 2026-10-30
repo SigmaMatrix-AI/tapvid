@@ -21,7 +21,7 @@ names it, not up front.
 
 ## Two tiers
 
-The tier decides how faithfully step 3 rebuilds the original (`references/specs/video-clone-tiers.spec.md`).
+The tier decides how faithfully step 3 rebuilds the original.
 
 | Tier | When | What changes |
 |---|---|---|
@@ -168,7 +168,7 @@ transcript and (when present) the understanding file. Times always come from `so
 
 ## Step 3 (low) — the quick template
 
-1. Write `$PROJECT/analysis/shots.json` (`references/specs/video-clone-tiers.spec.md` §3.1) from the shot strips,
+1. Write `$PROJECT/analysis/shots.json` following `assets/schemas/shots.json`, from the shot strips,
    the overview and the transcript: consecutive shots grouped into scenes that tile the film (a scene with a
    pixel or screen layer at most 15 s — split a longer shot with `start` / `end`), each with a one-line
    English `role`.
@@ -178,7 +178,10 @@ transcript and (when present) the understanding file. Times always come from `so
    `measure.mjs grid`; a split screen is two layers, a picture-in-picture a full-frame layer then a small
    `circle` / `round` one, a keyed presenter a backdrop then an avatar with `cutout`), a `describe`, and the
    people, products and screens the replica may replace (`subjects`, boxes in the layer). A new layout
-   inside a scene starts a new scene. Then every designed on-screen text with its box (read off `measure.mjs grid`), in / out in source seconds, entrance, colour and plate.
+   inside a scene starts a new scene. Order layers back to front; boxes are `[x, y, width, height]` in
+   0–1 of the frame (subjects use the layer's coordinates). Give layers unique keys: `presenter` for
+   the single avatar layer, other names excluding `texts` and `say` for the rest.
+   Then every designed on-screen text with its box (read off `measure.mjs grid`), in / out in source seconds, entrance, colour and plate.
    Burned-in captions of the narration are not texts: their look goes into `captions` (`references/captions.md`
    tokens). One open `font` that looks like the original's text, picked by eye; a palette from the frames.
 2. `node "$SKILL_ROOT/scripts/quick.mjs" "$PROJECT"` writes the template (boards, transitions, design, narrative
