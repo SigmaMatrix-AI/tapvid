@@ -90,7 +90,3 @@ Some features download additional tools or assets on first use:
 - Google Fonts for typography and VSCO samples for composed music.
 
 These have separate licenses and service terms; see [third-party notices](https://github.com/SigmaMatrix-AI/tapvid/blob/main/THIRD_PARTY_NOTICES.md). Model downloads, live provider checks, and paid generation are not part of the offline test suite.
-
-## Development
-
-See the repository's [contribution guidelines](https://github.com/SigmaMatrix-AI/tapvid/blob/main/CONTRIBUTING.md) for tests, runtime dependency updates, and provider fixtures.

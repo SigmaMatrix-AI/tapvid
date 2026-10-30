@@ -40,7 +40,7 @@ The plugin is self-contained: the SOP, reference documents, capability schemas, 
 
 ```text
 tapvid/
-├── README.md, LICENSE, CONTRIBUTING.md, THIRD_PARTY_NOTICES.md
+├── README.md, LICENSE, THIRD_PARTY_NOTICES.md
 ├── skills/remix/
 │   ├── SKILL.md
 │   ├── references/          # workflow documents; specs/ contains this document
@@ -945,7 +945,7 @@ All required instructions are distributed with the skill. No private repository 
 Distribute the complete `skills/remix/` directory using the direct skill installation in
 README.md. Future skills live beside it under `skills/<name>/`. This repository does not
 currently ship marketplace adapters. Tests and repository contributor docs are development
-resources; runtime scripts must not depend on them. Follow `CONTRIBUTING.md` before release.
+resources; runtime scripts must not depend on them.
 
 ## 12. Extended verification (not an execution record)
 
