@@ -34,4 +34,6 @@ jobs:
       - name: Verify reusable installation
         run: node skills/remix/scripts/ensure-runtime.mjs
       - name: Test including render and standalone installation
-        run: npm run test:full
+        # Browser recording tests compare real-time events with captured frames.
+        # Run test files sequentially so competing renders do not starve the recorder.
+        run: npm run test:full -- --test-concurrency=1
