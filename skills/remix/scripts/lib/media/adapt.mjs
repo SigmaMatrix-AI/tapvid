@@ -73,6 +73,7 @@ export function adaptToModel(capability, params, model) {
     Object.assign(resolved, fitResolution(params.min_short_edge, model.resolutions));
   }
   if (refVideos.length && model.refVideoMaxS) resolved.refVideoMaxS = model.refVideoMaxS;
+  if (refVideos.length && model.refVideoMinS) resolved.refVideoMinS = model.refVideoMinS;
   return { ok: true, resolved };
 }
 

@@ -42,11 +42,11 @@ export const meta = {
         { id: 'seedance-2.0-fast', default: true, aspects: ASPECTS_16_9, duration: { min: 5, max: 15 }, resolutions: res('480p', '720p'),
           firstFrame: true, maxRefs: 0, maxRefVideos: 0, price: { creditsPerSecond: { '480p': 8, '720p': 18 } } },
         { id: 'seedance-2.5', aspects: ASPECTS_16_9, duration: { min: 5, max: 15 }, resolutions: res('480p', '720p', '1080p'),
-          maxRefs: 30, maxRefVideos: 10, refVideoMaxS: 15, billsReferenceVideo: true, price: { creditsPerSecond: { '480p': 16, '720p': 34, '1080p': 82 } } },
+          maxRefs: 30, maxRefVideos: 10, refVideoMinS: 2, refVideoMaxS: 15, billsReferenceVideo: true, price: { creditsPerSecond: { '480p': 16, '720p': 34, '1080p': 82 } } },
         { id: 'seedance-2.0', aspects: ASPECTS_16_9, duration: { min: 5, max: 15 }, resolutions: res('480p', '720p', '1080p'),
-          maxRefs: 9, maxRefVideos: 3, refVideoMaxS: 15, billsReferenceVideo: true, price: { creditsPerSecond: { '480p': 10, '720p': 22, '1080p': 48 } } },
+          maxRefs: 9, maxRefVideos: 3, refVideoMinS: 2, refVideoMaxS: 15, billsReferenceVideo: true, price: { creditsPerSecond: { '480p': 10, '720p': 22, '1080p': 48 } } },
         { id: 'minimax-h3', aspects: ASPECTS_16_9, duration: { min: 5, max: 15 }, resolutions: res('480P', '768P', '2K'),
-          maxRefs: 9, maxRefVideos: 3, refVideoMaxS: 15, freeRefs: 5, creditsPerExtraRef: 6, price: { creditsPerSecond: { '480P': 4, '768P': 5, '2K': 10 } } },
+          maxRefs: 9, maxRefVideos: 3, refVideoMinS: 2, refVideoMaxS: 15, freeRefs: 5, creditsPerExtraRef: 6, price: { creditsPerSecond: { '480P': 4, '768P': 5, '2K': 10 } } },
         { id: 'veo-3.1', aspects: ASPECTS_16_9, durations: [4, 6, 8], resolutions: res('720p', '1080p'),
           maxRefs: 3, maxRefVideos: 0, price: { creditsPerSecond: { '720p': 29, '1080p': 29 } } },
         { id: 'veo-3.1-fast', aspects: ASPECTS_16_9, durations: [4, 6, 8], resolutions: res('720p', '1080p'),
@@ -118,7 +118,7 @@ async function videoBody(req, ctx, fresh) {
   if (p.first_frame) references.push({ kind: 'image', documentId: await upload(ctx, p.first_frame, fresh) });
   for (const ref of p.refs || []) references.push({ kind: 'image', documentId: await upload(ctx, ref.file, fresh) });
   for (const ref of p.ref_videos || []) {
-    const file = r.refVideoMaxS ? ctx.trim(ref.file, { maxS: r.refVideoMaxS }) : ref.file;
+    const file = r.refVideoMaxS ? ctx.trim(ref.file, { minS: r.refVideoMinS, maxS: r.refVideoMaxS }) : ref.file;
     references.push({ kind: 'video', documentId: await upload(ctx, file, fresh) });
   }
   return {

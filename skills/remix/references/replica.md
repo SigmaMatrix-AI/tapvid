@@ -184,6 +184,10 @@ screen), describe its new-topic version in the prompt instead and drop that clau
 > {Subject and action}. {Framing and camera move}. {Light, palette matching the film}. Style as in image 1. No
 > text, no logos.
 
+Models generate at least 5 s on most vendors, whatever the shot needs. A generated clip longer than its scene is
+sped up by `project.mjs` to fit, at most 2.5×, and past that the end is cut: write one quick action for a shot
+under 2 s, because only its first 2.5 × shot seconds show. A reference clip under 2 s is slowed to 2 s when it is uploaded.
+
 Rules: one action per shot; at most two hands in frame and say what each holds; the product's shape and colour
 in words even when an image is given; describe what to show, never "do not show the old product"; keep areas
 the board covers with text empty ("leave the left third clear").
