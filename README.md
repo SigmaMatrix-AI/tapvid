@@ -31,7 +31,7 @@ You can install individual skills without installing the entire collection.
 Tell your agent which skill to install. For example:
 
 ```text
-Install the Remix skill from https://github.com/SigmaMatrix-AI/tapvid/tree/main/skills/remix
+Install the Remix skill from https://github.com/SigmaMatrix-AI/tapvid
 ```
 
 ### Codex
