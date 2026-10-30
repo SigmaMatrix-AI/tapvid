@@ -303,7 +303,8 @@ Then:
    `$REPLICA/elements/`; presenter slots as digital human (narration mode only).
    **At `low`** each layer is one slot: `presenter` stays a digital human; a pixel layer stays `ai` /
    `reference` with `provider: "tapvid"`, `model: "minimax-h3"` when TapVid is ready (else leave both
-   `null`), the replacements in `replace` and the prompt from `references/replica.md` §6 Low tier; a screen
+   `null`), the replacements in `replace` and the prompt from `references/replica.md` §6 Low tier, and goes to
+   keyframe when the identity gate in step 7 fails; a screen
    layer becomes `user` (their recording or screenshot) when it must be readable, otherwise it is treated
    like a pixel layer; a code layer is an element — write `$REPLICA/elements/<Board>.<key>.jsx` for the new
    topic inside the region its field's `desc` names. The `texts` items are the new copy, one per original
@@ -394,11 +395,19 @@ rebuild, ask again. Wait for an explicit yes.
    returning pass, or the problem and a clean span: extra hands, wrong fingers, a morphing product, garbled text, clipping, the subject
    drifting back to the original, a digital human's pace drifting within its clip. Trim to a clean span that
    covers the slot; otherwise state the cost and regenerate once with the prompt fixed.
+   **Identity gate, on every clip that shows a person** (`references/replica.md` §9): the original's person must
+   not appear in any frame. `inspect.mjs "$REPLICA" <request-id> --identity`, look at every frame, then
+   `identity.mjs pass|fail "$REPLICA" <request-id> --saw "<whose face, where>"`; `render.mjs` refuses the film
+   until `identity.mjs status "$REPLICA"` is clear. A clip that fails is never trimmed or kept: it goes to keyframe,
+   and the other reference clips of the film lose their verdict and are read again. Do not route a generated clip
+   through `source: user`: that slot leaves the gate. Contact sheets and overviews do not count as this check.
 
 | Failure | Do |
 |---|---|
 | Network / 5xx | The runner already retried once; rerun `run` later |
 | Moderation | Rewrite the prompt without brands, celebrities, copyrighted elements; retry once; a refused reference video switches that slot to keyframe |
+| A first frame with a realistic face flagged as sensitive (Seedance) | Move that slot to another first-frame model (`veo-3.1-fast`); rewording does not help |
+| The same error returns seconds after a rerun, with no new vendor job | The rerun returned the earlier result of an identical request: change the model or the prompt, then run it |
 | A reference picture refused by the vendor | Retry that request without the reference (prompt only); a portrait reframe falls back to `reframe.mjs` |
 | Unsupported / invalid | The runner moved to the next model or vendor; nothing to do unless all failed |
 | Bad key / no balance | That vendor is off for this run; tell the user (new key via `set-key.mjs`, or top up) |
@@ -423,7 +432,10 @@ Read `references/audio.md` and, in narration mode, `references/captions.md`.
    every scene midpoint, the frames around every line boundary, every transition's start / middle / end and the contact sheet — text overflow, two texts overlapping (captions included; `frames.mjs` also scans the film for this and exits 1 listing each pair), captions covered, a pop-up over a face, jumps at
    boundaries, sound vs picture. Fix and repeat, at most 3 rounds.
 4. `node "$SKILL_ROOT/scripts/render.mjs" "$REPLICA"` → `$REPLICA/out/tapvid.mp4` (1080p). Check the render: its
-   length against the original's, the pace line `timing.mjs` printed, and frames sampled across the film.
+   length against the original's, the pace line `timing.mjs` printed, and frames sampled across the film,
+   including the first second of every scene that shows a person, frame by frame at full width: a midpoint never
+   sees an original person who is only in a scene's opening frames. A slot that went back to generation
+   counts as done only when its request completed: a failed request leaves the old clip under the same file name.
    Alternative versions the user asks for go to `out/tapvid-<what>.mp4`; `tapvid.mp4` is always the current one.
 5. `node "$SKILL_ROOT/scripts/review.mjs" "$PROJECT" <slug>` again: the Final cut tab plays the film beside
    the original with a version picker, the Assets tab every generated clip with its vendor and cost.

@@ -3,6 +3,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fromPosixRel, readJson } from './common.mjs';
+import { refShowsPerson, templateTier } from './identity.mjs';
 import { check } from './schema.mjs';
 import { PACE_TOLERANCE, speechRate, textSyllables } from './pace.mjs';
 import { loadReplica, mediaPaths, narrationLines, occurrences, sourceWindow } from './replica.mjs';
@@ -60,6 +61,9 @@ function checkMedia(ctx, scene, key, fields, errors, warnings) {
     const ref = m.ref ? refs[m.ref] : null;
     if (m.ref && !ref) errors.push(`${at}: ref ${m.ref} is not in refs.json`);
     const hasClip = Boolean(ref?.clip);
+    if (m.source === 'ai' && m.mode === 'reference' && refShowsPerson(ref) && !m.reference_ok && templateTier(ctx) === 'high') {
+      errors.push(`${at}: its reference clip shows a person, and a reference clip can carry that person into the film: use mode keyframe, or say in reference_ok why no one is recognisable (a silhouette)`);
+    }
     if (m.source === 'ai' && m.mode === 'reference' && !hasClip) errors.push(`${at}: mode reference needs a ref with a clip`);
     if (m.source === 'ai' && m.mode === 'keyframe' && !ref?.frame) errors.push(`${at}: mode keyframe needs a ref with a frame`);
     const needsSketch = m.source === 'code' && m.kind !== 'element'

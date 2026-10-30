@@ -138,6 +138,15 @@ Each media entry:
 }
 ```
 
+**A slot with a person starts as `keyframe` at `high`** (`replica-init.mjs` writes it so, and `validate.mjs replica`
+rejects `reference` there). A reference video carries the original's person, and a model can copy that person
+however the prompt and the replacement image read. Showing a real person's likeness in the film is a fault no
+quality can offset, so `reference` stays for slots with no recognisable person: objects, places, and with a stated
+`reference_ok` ("a silhouette, no one recognisable") a person who cannot be told apart. For a keyframe, point `frame_t` of the slot in `analysis/boards.json` at the window's start (its
+default is the middle, which may be another moment of a moving shot) and run `refs.mjs --only <Board>`; `validate.mjs
+replica` then asks for the slot's sketch (`references/sketches.md`), its fallback if generation fails. The
+trade-off is that the camera move then follows the description, not the reference clip: say so in the delivery report.
+
 `visual` is the one line the user reads in the table (their language); `prompt` is English for the provider;
 `provider` / `model` pin a vendor the user chose (otherwise routing picks); `sketch` is set for `code` slots
 and for `ai` slots without a reference.
@@ -189,7 +198,8 @@ replacements (the user's photo, a product shot, a screenshot of their app):
 > the reference video; never its people, {phone / screen} content, text or setting. No captions, no subtitles,
 > no text overlays.
 
-MiniMax H3 keeps the person in image 1 recognisable and copies the reference's handheld move and framing; a
+MiniMax H3 copies the reference's handheld move and framing. It can keep the person in image 1 recognisable, and
+it can also keep the reference's person instead, so every such clip passes the identity gate (§9); a
 screen in the shot comes out as a likeness of the screenshot whose small text is not readable. When the screen
 must be readable, make that slot `user` (a capture or the user's screenshot) instead. A layer with `cutout`
 needs only its people to read well: ask for a plain, evenly lit background behind them.
@@ -245,4 +255,13 @@ own voice is the take (`references/audio.md` §2).
   morphing product, garbled text, clipping through objects, the subject drifting back to the original or into
   someone else. A clean span that covers the slot is trimmed and used; otherwise state the cost and regenerate
   once with the prompt fixed (fewer hands, one action, a keyframe).
+- **Identity gate, every clip that shows a person.** Beside the replacement image and the original's subject
+  frame, read `inspect.mjs "$REPLICA" <id> --identity` (the first second at 8 fps, the rest at 2 fps, at full width,
+  because a person can be a few dozen pixels in a wide or overhead shot; zoom a crop when the face still cannot be
+  told apart). Record what you saw: `identity.mjs pass|fail "$REPLICA" <id> --saw "<whose face, where>"`. Wrong person, or a
+  person you cannot identify, is a failure: state nothing as swapped until you have seen the face. Do not trim
+  around it: regenerate as `keyframe`. A fail takes the verdict off all the film's `reference` clips, since one leak says
+  that mode is copying people on this source; a regenerated clip loses its own. `render.mjs` refuses while
+  `identity.mjs status "$REPLICA"` lists anything, with no flag to skip it. A digital human and any slot whose
+  reference or `replace` names a `person` subject is covered, so give every person a subject in `analysis/boards.json`.
 - A slot that still fails becomes its sketch (`source: "code"`) and is listed in the delivery report.

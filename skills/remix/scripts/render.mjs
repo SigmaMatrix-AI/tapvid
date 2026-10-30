@@ -7,6 +7,7 @@ import { cpus } from 'node:os';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fail, fromPosixRel, launchBrowser, parseArgs, readJson, run } from './lib/common.mjs';
+import { identityProblems } from './lib/identity.mjs';
 import { firstCues, openProject, sfxTracker } from './lib/capture.mjs';
 import { buildProject, generateProject, projectDirFor } from './lib/project.mjs';
 import { loadReplica } from './lib/replica.mjs';
@@ -24,6 +25,9 @@ const args = parseArgs();
 if (!args._[0]) fail('usage: render.mjs <replica-dir> [--workers N] [--no-build]', 2);
 const ctx = loadReplica(args._[0]);
 const { replica } = ctx;
+// A real person's likeness must not reach the film: no flag skips this (references/replica.md §9).
+const unchecked = identityProblems(ctx);
+if (unchecked.length) fail(`identity gate: the film cannot be rendered yet\n${unchecked.join('\n')}`);
 let meta;
 try {
   meta = args['no-build'] ? { dir: projectDirFor(ctx.dir, 'final'), ...readJson(join(projectDirFor(ctx.dir, 'final'), 'project.json')) } : generateProject(ctx.dir, { mode: 'final' });

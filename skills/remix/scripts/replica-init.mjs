@@ -9,6 +9,7 @@ import { pathToFileURL } from 'node:url';
 import { cloneDir, fail, parseArgs, replicaDir, writeJson } from './lib/common.mjs';
 import { check } from './lib/schema.mjs';
 import { loadTemplate, mediaPaths } from './lib/replica.mjs';
+import { refShowsPerson, templateTier } from './lib/identity.mjs';
 
 const canvasAspect = (canvas) => (canvas.width > canvas.height ? '16:9' : '9:16');
 
@@ -20,7 +21,7 @@ function mediaEntry(ctx, board, path, field, type, mode) {
   const entry = {
     kind: presenter ? 'avatar' : type,
     source: 'ai',
-    mode: ref?.clip ? 'reference' : 'text',
+    mode: ref?.clip ? (refShowsPerson(ref) && templateTier(ctx) === 'high' ? 'keyframe' : 'reference') : 'text',
     ref: ref ? key : null,
     replace: (ref?.subjects || []).map((s) => s.id),
     prompt: '',
