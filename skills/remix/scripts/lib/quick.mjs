@@ -1,4 +1,4 @@
-// The low-tier template (references/specs/video-clone-tiers.spec.md §3.2): analysis/shots.json → one generic
+// The low-tier template: analysis/shots.json → one generic
 // board per scene (the original's layout as layers — avatar, pixel, screen and code regions — under the
 // original's on-screen texts), the analysis files the existing scripts read (boards.json, elements.json),
 // template.json, design.js and skill/SKILL.md.
