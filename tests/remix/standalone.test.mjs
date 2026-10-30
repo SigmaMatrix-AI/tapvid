@@ -1,19 +1,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cp } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 // Catches dependencies on repository-root assets, cwd, or package metadata when a
 // user installs only this skill. Spaces and non-ASCII paths must work as well.
-test('a standalone remix install replays providers, validates templates, and loads user extensions', (t) => {
+test('a standalone remix install replays providers, validates templates, and loads user extensions', async (t) => {
   const dir = mkdtempSync(join(tmpdir(), 'tapvid standalone '));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const skill = join(dir, '安装 remix');
   const home = join(dir, 'user data');
-  cpSync(new URL('../../skills/remix/', import.meta.url), skill, { recursive: true });
-  cpSync(new URL('./fixtures/sample-clone/', import.meta.url), join(dir, 'clone sample'), { recursive: true });
+  // Node 22's native cpSync path mishandles Unicode destinations on Windows.
+  // The asynchronous copy keeps the non-ASCII installation path covered there too.
+  await cp(new URL('../../skills/remix/', import.meta.url), skill, { recursive: true });
+  await cp(new URL('./fixtures/sample-clone/', import.meta.url), join(dir, 'clone sample'), { recursive: true });
   const invoke = (script, ...args) => {
     const r = spawnSync(process.execPath, [join(skill, 'scripts', script), ...args], {
       cwd: dir, env: { ...process.env, TAPVID_VIDEO_HOME: home }, encoding: 'utf8', timeout: 30000,
