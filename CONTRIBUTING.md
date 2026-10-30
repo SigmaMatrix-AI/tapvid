@@ -4,18 +4,22 @@
 
 Add new skills under `skills/<name>/`, with a unique lowercase, hyphenated name and a `SKILL.md` containing `name` and `description` frontmatter. Put executable code in `scripts/`, reading material in `references/`, and templates or structured resources in `assets/`. Add tests under `tests/<name>/`.
 
+Include a `README.md` for people using the skill: explain its purpose and output, show usage examples, and document supported environments, setup, MCP dependencies, external APIs, and account requirements. Keep the agent's execution instructions in `SKILL.md`. Add a row to the root README's available-skills table linking to the skill's README; keep the root README focused on the collection and shared installation instructions.
+
 A skill must work when only its directory is copied to another location, including paths containing spaces. Resolve bundled resources from module or skill locations, not the caller's working directory. Do not introduce runtime imports from repository-level tests, another skill, or a private repository. Introduce shared packages only when there is a concrete need and a distribution strategy for independently installed skills.
 
 Keep user state in the documented home directory. Updates must preserve existing projects, `TAPVID_*` environment variables, custom providers and credentials. The root package.json is for development and is not an npm publishing entry point.
 
 ## Test changes
 
-Use Node.js 22 or 24 and install FFmpeg/ffprobe. Then:
+The current test suite covers Remix. Use Node.js 22 or 24 and install FFmpeg/ffprobe. Then, from the repository root:
 
 ```sh
 node skills/remix/scripts/ensure-runtime.mjs
 npm run test:full
 ```
+
+`npm test` runs offline regressions but skips browser-dependent tests when the runtime is absent. `npm run test:full` first requires all core dependencies and a launchable Chromium, preventing missing runtime dependencies from silently skipping render coverage. The optional real matting test can still skip when its model and engine are absent.
 
 For isolated tests, set `TAPVID_VIDEO_HOME` to a scratch directory and `PLAYWRIGHT_BROWSERS_PATH` to a separate browser cache before both setup and tests. No API keys are needed. Never run live or paid provider tests in a normal pull-request workflow.
 

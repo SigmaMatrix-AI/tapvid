@@ -1,78 +1,82 @@
-# TapVid
+<p align="center">
+  <img src="assets/logo.svg" alt="TapVid" width="240">
+</p>
 
-Reusable skills for making videos with a coding agent. Each skill contains its own instructions, scripts and assets, so it can be installed independently.
+<p align="center">
+  <strong>Open-source agent skills by SigmaMatrix AI for video creation</strong>
+</p>
 
-| Skill | What it does |
-| --- | --- |
-| [remix](skills/remix/SKILL.md) | Rebuild a reference video as reusable React boards, then adapt it to a new topic with new copy, media, narration and music. Render the result locally as `tapvid.mp4`. |
+<p align="center">
+  <a href="https://tapvid.ai?utm_source=tapvid-skill"><img src="https://img.shields.io/badge/Website-TapVid-78D701?style=flat" alt="Website: TapVid"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue?style=flat" alt="License: Apache-2.0"></a>
+  <a href="#available-skills"><img src="https://img.shields.io/badge/Skills-Explore-8A2BE2?style=flat" alt="Skills: Explore"></a>
+</p>
 
-Remix supports a faithful `high` tier (default) and a faster `low` tier. It accepts a local video, a URL, search keywords or an existing clone project. It needs a local coding agent with filesystem, shell and visual inspection capabilities; the scripts alone do not replace the agent's analysis and creative work.
+Each skill includes instructions and supporting resources for a specific workflow. Install only the skills you need.
 
-## Install
+## Available skills
 
-```sh
-git clone https://github.com/SigmaMatrix-AI/tapvid.git
-cd tapvid
+| Skill | What it does | Best for | MCP dependency |
+| --- | --- | --- | --- |
+| [Remix](skills/remix/README.md) | Turn a reference video into a reusable template, then create a new video for your topic. | Creators and product marketers | None |
+
+Open a skill's README for examples, setup instructions, and supported environments.
+
+## Install a skill
+
+You can install individual skills without installing the entire collection.
+
+### Ask your agent
+
+Tell your agent which skill to install. For example:
+
+```text
+Install the Remix skill from https://github.com/SigmaMatrix-AI/tapvid/tree/main/skills/remix
 ```
 
-Copy the **whole** `skills/remix` directory into your agent's skills directory. For a first installation on macOS:
+### Codex
 
-```sh
-# Codex
-mkdir -p "$HOME/.agents/skills"
-cp -R skills/remix "$HOME/.agents/skills/remix"
+In a local Codex environment with `skill-installer` available, ask:
 
-# Or Claude Code
-mkdir -p "$HOME/.claude/skills"
-cp -R skills/remix "$HOME/.claude/skills/remix"
+```text
+$skill-installer install https://github.com/SigmaMatrix-AI/tapvid/tree/main/skills/remix
 ```
 
-On Windows, copy the folder into `%USERPROFILE%\.agents\skills\remix` for Codex or `%USERPROFILE%\.claude\skills\remix` for Claude Code. If `remix` is already installed, back up local changes and replace that skill folder instead of nesting another copy inside it. User projects and `~/.tapvid-video` should be kept.
+Replace `remix` with the skill you want. This is a prompt for Codex, not a terminal command.
 
-These are the documented [Codex skill locations](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills) and [Claude Code skill locations](https://code.claude.com/docs/en/skills#choose-where-skills-load). Reload skills or start a new agent session after installation. This repository currently uses direct skill installation, without marketplace manifests.
+### Claude Code
 
-## Use
+Download or clone this repository, then copy the selected skill's entire folder, including its supporting files, into either:
 
-Ask your agent, for example:
+- `~/.claude/skills/` — available across your local projects.
+- `.claude/skills/` — available within a specific local project.
 
-> Use remix to recreate `/absolute/path/reference.mp4` for my note-taking app. Start with the low tier.
+For example, Remix's entry file should be located at:
 
-Or invoke `/remix /absolute/path/reference.mp4 low` in Claude Code. The workflow builds a reusable template first, then prepares the new topic, previews the plan and renders the final video. By default, it requests confirmation at the review points described in [SKILL.md](skills/remix/SKILL.md). `auto` delegates production choices within any budget you specify.
-
-Projects contain `source/`, `analysis/`, `template/` and `replicas/`. Each replica's final output is `replicas/<slug>/out/tapvid.mp4`. Existing TapVid clone projects, provider settings and stored credentials retain their current formats and locations.
-
-## Requirements and setup
-
-- Node.js 20 or newer with npm; current Node.js 22 or 24 is recommended for development.
-- FFmpeg and ffprobe on `PATH`.
-- Internet access for the initial npm dependencies and Playwright Chromium download.
-- macOS and Windows platform adapters are included. The migration is locally tested on macOS; the CI workflow covers macOS and Windows. Linux requires manual system dependency setup and does not have native key-dialog or credential-store integration.
-
-From the checkout, bootstrap the runtime:
-
-```sh
-node skills/remix/scripts/ensure-runtime.mjs
+```text
+~/.claude/skills/remix/SKILL.md
 ```
 
-The agent runs the equivalent command from the installed skill automatically. When available, the setup command uses Homebrew on macOS or winget on Windows to install missing system tools. It installs pinned npm dependencies with `npm ci` into `~/.tapvid-video/runtime`, then installs and checks Chromium. Subsequent runs reuse the dependencies and repair a missing browser cache. A successful setup ends with `ready`; `missing: ...` identifies system tools that need manual installation.
+After installation, check the skill's README for additional dependencies and setup. If the skill does not appear, start a new agent session. When updating, back up any local edits and replace the existing skill folder rather than nesting another copy inside it.
 
-Set `TAPVID_VIDEO_HOME` to place runtime data, caches and custom providers elsewhere. `PLAYWRIGHT_BROWSERS_PATH` controls the browser cache. Neither the checkout nor an installed skill needs `node_modules`.
+## Service access
 
-## Media providers and optional downloads
+Each skill's README explains any MCP connections, external APIs, or accounts it needs. Installing a skill does not automatically configure or grant access to those services. Accounts, credentials, and usage charges are managed separately by each provider.
 
-Local template creation, offline provider checks, code animation and rendering do not require a TapVid account. Generated video, images, narration or avatars require a suitable provider and may incur charges. Configure only the providers you use; see [providers](skills/remix/references/providers.md) and [provider authoring](skills/remix/references/provider-authoring.md).
+The skills in this repository are open source. External service implementations are maintained separately and are not included here.
 
-Keys can come from provider environment variables or the native credential store through `set-key.mjs`. Do not put keys in chat, project files or commits. For example, `TAPVID_API_KEY` is needed only for the TapVid provider. Media providers use direct HTTP APIs; no MCP connection is required.
+## Contributing
 
-Optional features download their own tools or assets on first use: yt-dlp for downloads, whisper.cpp and a transcription model (about 1.6 GB), ONNX Runtime and an RVM model for matting, Google Fonts, and VSCO samples for composed music. These have separate licenses and service terms; see [third-party notices](THIRD_PARTY_NOTICES.md). Model downloads, live provider checks and paid generation are not part of the offline test suite.
+Bug reports, documentation improvements, and new skills are welcome.
 
-## Development
+When opening an issue, include:
 
-```sh
-node skills/remix/scripts/ensure-runtime.mjs
-npm run test:full
-```
+- The skill name and environment you used.
+- What you expected to happen.
+- What happened, with steps to reproduce it.
 
-`npm test` runs offline regressions but skips browser-dependent tests when the runtime is absent. `npm run test:full` first requires all core dependencies and a launchable Chromium, preventing missing runtime dependencies from silently skipping render coverage. The optional real matting test can still skip when its model and engine are absent.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development instructions and guidelines for adding a skill.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to add a skill or provider. Code is covered by the repository's [Apache-2.0 license](LICENSE); third-party components and downloaded content retain their own terms.
+## License
+
+[Apache-2.0](LICENSE). Third-party components and downloaded content retain their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
