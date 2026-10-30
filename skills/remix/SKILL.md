@@ -132,9 +132,10 @@ generation starts. Deliver with the same report, and say which choices you made.
 1. `node "$SKILL_ROOT/scripts/ensure-runtime.mjs"` installs whatever is missing (Homebrew on macOS, winget on
    Windows) and the runtime; the first run downloads Chromium and can take minutes — say so. Only a
    `missing: …` last line (no package manager, or a manual step) needs the user: show what it printed.
-2. `node "$SKILL_ROOT/scripts/media.mjs" providers --json` — read it with `references/providers.md`, quietly. No
-   transcription provider ready → `node "$SKILL_ROOT/scripts/ensure-runtime.mjs" --tool whisper-cli` (local, free;
-   the model download falls back to a mirror on a slow network by itself).
+2. `node "$SKILL_ROOT/scripts/media.mjs" providers --json` — read it with `references/providers.md`, quietly. `whisper-local`
+   not ready → `node "$SKILL_ROOT/scripts/ensure-runtime.mjs" --tool whisper-cli` (local, free, first in the
+   transcription order even when another vendor has a key; the model download falls back to a mirror on a slow
+   network by itself).
    Keys and generation providers are not raised now; they come up in step 4, where they matter.
 
 ## Step 1 — inputs

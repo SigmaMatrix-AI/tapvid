@@ -79,6 +79,8 @@ test('providerOrder puts tapvid first and appends custom providers', () => {
   const reg = registryOf(fakeProvider('fal'), fakeProvider('tapvid'), custom);
   assert.deepEqual(providerOrder('video.generate', reg, {}), ['tapvid', 'fal', 'mine']);
   assert.deepEqual(providerOrder('video.generate', reg, { routing: { 'video.generate': ['fal'] } }), ['fal', 'tapvid', 'mine']);
+  const transcribers = new Map(['elevenlabs', 'whisper-local', 'openai'].map((name) => [name, { meta: { name, capabilities: { 'speech.transcribe': {} } } }]));
+  assert.deepEqual(providerOrder('speech.transcribe', transcribers, {}), ['whisper-local', 'elevenlabs', 'openai']);
 });
 
 test('route skips unconfigured providers and explains why', () => {

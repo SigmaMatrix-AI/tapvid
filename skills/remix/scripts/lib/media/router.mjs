@@ -11,7 +11,8 @@ export const DEFAULT_ORDER = {
   'image.generate': ['tapvid', 'fal', 'openai', 'gemini', 'minimax', 'ark', 'replicate'],
   'speech.synthesize': ['tapvid', 'elevenlabs', 'minimax', 'openai', 'gemini'],
   'speech.voices': ['tapvid', 'elevenlabs', 'minimax', 'openai', 'gemini'],
-  'speech.transcribe': ['elevenlabs', 'whisper-local', 'openai'],
+  // Local first: a transcript only drives timing and reading the script, so it need not cost anything.
+  'speech.transcribe': ['whisper-local', 'elevenlabs', 'openai'],
   'video.understand': ['gemini'],
   'music.generate': ['elevenlabs', 'minimax'],
   'music.search': ['jamendo'],
