@@ -31,7 +31,7 @@ You can install individual skills without installing the entire collection.
 Tell your agent which skill to install. For example:
 
 ```text
-Install the Remix skill from https://github.com/SigmaMatrix-AI/tapvid/tree/main/skills/remix
+Install the Remix skill from https://github.com/SigmaMatrix-AI/tapvid
 ```
 
 ### Codex
@@ -64,18 +64,6 @@ After installation, check the skill's README for additional dependencies and set
 Each skill's README explains any MCP connections, external APIs, or accounts it needs. Installing a skill does not automatically configure or grant access to those services. Accounts, credentials, and usage charges are managed separately by each provider.
 
 The skills in this repository are open source. External service implementations are maintained separately and are not included here.
-
-## Contributing
-
-Bug reports, documentation improvements, and new skills are welcome.
-
-When opening an issue, include:
-
-- The skill name and environment you used.
-- What you expected to happen.
-- What happened, with steps to reproduce it.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development instructions and guidelines for adding a skill.
 
 ## License
 
