@@ -5,7 +5,9 @@ import { join } from 'node:path';
 import { readJson, writeJson } from '../../skills/remix/scripts/lib/common.mjs';
 import { loadReplica } from '../../skills/remix/scripts/lib/replica.mjs';
 import { boardCaptions, buildProject, generateProject } from '../../skills/remix/scripts/lib/project.mjs';
-import { checkBoardCaptions, checkCutoutDrawn } from '../../skills/remix/scripts/lib/validate-template.mjs';
+import { checkBoardCaptions, checkCaptionBand, checkCutoutDrawn, checkSegmentSeconds } from '../../skills/remix/scripts/lib/validate-template.mjs';
+import { overlappingTexts } from '../../skills/remix/scripts/lib/capture.mjs';
+import { phrases } from '../../skills/remix/assets/template/src/components/captionPhrases.js';
 import { resolveTiming } from '../../skills/remix/scripts/lib/timing.mjs';
 import { lintDeterminism, validateProject } from '../../skills/remix/scripts/lib/validate-project.mjs';
 import { clip, fakeTasks, makeClone, makeReplica, runtimeReady } from './render-helpers.mjs';
@@ -78,6 +80,40 @@ test('boardCaptions: false drops a board\'s captions, off mutes its lines, other
   assert.deepEqual(boardCaptions(undefined, words, segments), { words, style: {} });
   assert.deepEqual(boardCaptions(true, words, segments), { words, style: {} });
   assert.deepEqual(boardCaptions({ off: ['items.title'], centerY: 80 }, words, segments), { words: [words[2]], style: { centerY: 80 } });
+});
+
+test('phrases break at a silence: a muted line leaves no phrase waiting across it', () => {
+  const word = (text, start, end) => ({ text, start, end });
+  const words = [word('Revisions', 0, 0.5), word('drag.', 0.5, 0.9), word('Now', 5, 5.2), word('fly.', 5.2, 5.5)];
+  const [{ words: muted }] = [boardCaptions({ off: ['middle'] }, [...words.slice(0, 2), word('hidden', 1, 4.9), ...words.slice(2)], [{ key: 'middle', start: 1, end: 4.95 }])];
+  assert.deepEqual(muted, words);
+  assert.deepEqual(phrases(muted, 38).map((g) => [g.start, g.end]), [[0, 0.9], [5, 5.5]]);
+  assert.deepEqual(phrases(words.slice(0, 2), 38).map((g) => g.words.length), [2]);
+  assert.equal(phrases(words.slice(0, 2), 10).length, 2);
+});
+
+test('checkSegmentSeconds warns on the original\'s seconds, not on a fraction or a short entrance', () => {
+  const meta = { example_segments: [{ key: 'leadSay', start: 0, end: 2 }, { key: 'compareSay', start: 2, end: 4 }] };
+  assert.match(checkSegmentSeconds('E', meta, 'title(q, [1,2,3,4], 5.4, "leadSay", 1.637, 0.85)')[0], /1\.637 s after line "leadSay"/);
+  assert.equal(checkSegmentSeconds('E', meta, 'const a = local("compareSay") - 2.987;').length, 1);
+  assert.deepEqual(checkSegmentSeconds('E', meta, 'const a = local("compareSay") - 0.087; const s = seg("leadSay"); at(s, 0.78 * span);'), []);
+});
+
+test('checkCaptionBand finds captions on a title; a board without captions or another centerY passes', () => {
+  const elements = [{ id: 'E.question', board: 'E', kind: 'title', box: [0.12, 0.06, 0.76, 0.07] }, { id: 'E.cap', board: 'E', kind: 'caption', box: [0.1, 0.07, 0.8, 0.06] }];
+  const design = { captions: { centerY: 9, size: 4 } };
+  assert.match(checkCaptionBand('E', undefined, design, elements)[0], /captions at 9% run over E\.question/);
+  assert.equal(checkCaptionBand('E', undefined, design, elements).length, 1);
+  assert.deepEqual(checkCaptionBand('E', false, design, elements), []);
+  assert.deepEqual(checkCaptionBand('E', { centerY: 40 }, design, elements), []);
+});
+
+test('overlappingTexts pairs texts that collide, not ones that only touch', () => {
+  const part = (text, box) => ({ part: 'Heading', text, box });
+  const title = part('Title', [100, 100, 500, 200]);
+  assert.equal(overlappingTexts([title, part('Caption', [150, 120, 400, 180])]).length, 1);
+  assert.deepEqual(overlappingTexts([title, part('Below', [100, 198, 500, 300])]), []);
+  assert.deepEqual(overlappingTexts([title, part('Far', [600, 100, 900, 200])]), []);
 });
 
 test('checkBoardCaptions: the rule is required once the template has captions; off names narration fields', () => {

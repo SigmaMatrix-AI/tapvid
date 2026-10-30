@@ -226,7 +226,7 @@ and these references cover what you need, so do not read plugin sources.
 7. `node "$SKILL_ROOT/scripts/refs.mjs" "$PROJECT"` for all slots; write one English `describe` per slot in
    `template/refs/refs.json`.
 8. Narrative structure `template/skill/SKILL.md` and the rest of `template.json` (`references/structure.md`).
-9. Swap test (second topic, min / max list counts, Chinese and 1.5× English text).
+9. Swap test (second topic, min / max list counts, Chinese and 1.5× English text, every line half its length).
 10. Acceptance (`references/acceptance.md`): full `build-boards.mjs`, then in one command (they are
     independent, run them in the background together) `clock.mjs "$PROJECT"`,
     `compare.mjs "$PROJECT" --fail-under 0.95 --timing` (sound effects included) and
@@ -420,7 +420,7 @@ Read `references/audio.md` and, in narration mode, `references/captions.md`.
 1. `node "$SKILL_ROOT/scripts/project.mjs" "$REPLICA" --final`.
 2. `node "$SKILL_ROOT/scripts/validate.mjs" project "$REPLICA/project"` — fix every error.
 3. `node "$SKILL_ROOT/scripts/frames.mjs" "$REPLICA"`, then fast sub-agents (one per group of scenes) look at
-   every scene midpoint, every transition's start / middle / end and the contact sheet — text overflow, captions covered, a pop-up over a face, jumps at
+   every scene midpoint, the frames around every line boundary, every transition's start / middle / end and the contact sheet — text overflow, two texts overlapping (captions included; `frames.mjs` also scans the film for this and exits 1 listing each pair), captions covered, a pop-up over a face, jumps at
    boundaries, sound vs picture. Fix and repeat, at most 3 rounds.
 4. `node "$SKILL_ROOT/scripts/render.mjs" "$REPLICA"` → `$REPLICA/out/tapvid.mp4` (1080p). Check the render: its
    length against the original's, the pace line `timing.mjs` printed, and frames sampled across the film.

@@ -153,6 +153,31 @@ export function checkBoardCaptions(name, meta, templateCaptions) {
     .map((k) => `board ${name}: meta.captions.off "${k}" is not a narration field (${lines.join(', ') || 'none'})`);
 }
 
+// A segmented board's times are fractions of their line: the original's seconds land outside a shorter one.
+// Only an entrance nudge may stay in seconds, and those measure well under this.
+const MAX_SEGMENT_SECONDS = 0.5;
+
+export function checkSegmentSeconds(name, meta, source) {
+  const out = [];
+  for (const { key } of meta.example_segments || []) {
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    for (const m of source.matchAll(new RegExp(`["'\`]${escaped}["'\`]\\)?\\s*[,+-]\\s*(\\d*\\.?\\d+)`, 'g'))) {
+      if (Number(m[1]) >= MAX_SEGMENT_SECONDS) out.push(`board ${name}: ${m[1]} s after line "${key}" looks like the original's timing — use a fraction of the line (references/boards.md §2)`);
+    }
+  }
+  return out;
+}
+
+// The caption band of a board that shows captions, against its title and sticker boxes (0–1 of the frame).
+export function checkCaptionBand(name, rule, design, elements) {
+  if (rule === false) return [];
+  const style = { ...design?.captions, ...(rule && typeof rule === 'object' ? rule : {}) };
+  if (style.centerY == null || style.size == null) return [];
+  const [top, bottom] = [(style.centerY - style.size) / 100, (style.centerY + style.size) / 100];
+  return elements.filter((e) => e.board === name && ['title', 'sticker'].includes(e.kind) && e.box[1] < bottom && e.box[1] + e.box[3] > top)
+    .map((e) => `board ${name}: captions at ${style.centerY}% run over ${e.id} (references/captions.md §1)`);
+}
+
 // A media.cutout field `host` reaches the board as a second prop `hostCutout` (the same clip with only the
 // people opaque), which the board draws over the elements behind the person.
 export function checkCutoutDrawn(name, fields, source) {
@@ -299,6 +324,7 @@ export async function validateTemplate(templateDir) {
   const boardsDir = join(templateDir, 'boards');
   const listed = Array.isArray(template.boards) ? template.boards : [];
   const boardFields = {};
+  const captionRules = {};
   const onDisk = existsSync(boardsDir) ? readdirSync(boardsDir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : [];
   for (const extra of onDisk.filter((n) => !listed.includes(n))) warnings.push(`boards/${extra}.json is not in template.json boards`);
   for (const name of new Set([...listed, ...onDisk])) {
@@ -314,8 +340,15 @@ export async function validateTemplate(templateDir) {
     if (schemaErrors.length) continue;
     errors.push(...checkSegments(name, meta), ...checkExample(name, meta.schema.fields, meta.example_data),
       ...checkMediaKeys(name, meta.schema.fields), ...checkBoardCaptions(name, meta, template.audio?.captions));
-    if (existsSync(jsxPath)) errors.push(...checkCutoutDrawn(name, meta.schema.fields, readFileSync(jsxPath, 'utf-8')));
-    if (listed.includes(name)) boardFields[name] = meta.schema.fields;
+    if (existsSync(jsxPath)) {
+      const source = readFileSync(jsxPath, 'utf-8');
+      errors.push(...checkCutoutDrawn(name, meta.schema.fields, source));
+      warnings.push(...checkSegmentSeconds(name, meta, source));
+    }
+    if (listed.includes(name)) {
+      boardFields[name] = meta.schema.fields;
+      captionRules[name] = meta.meta?.captions;
+    }
   }
 
   const analysisDir = join(dirname(templateDir), 'analysis');
@@ -330,6 +363,9 @@ export async function validateTemplate(templateDir) {
       errors.push(...checkElements({ inventory, boardFields, design,
         motion: readJson(join(analysisDir, 'motion.json'), null),
         faces: readJson(join(templateDir, 'fonts.json'), { faces: [] }).faces || [] }));
+      if (template.audio?.captions) {
+        for (const name of Object.keys(captionRules)) warnings.push(...checkCaptionBand(name, captionRules[name], design, inventory.elements || []));
+      }
     }
   }
 

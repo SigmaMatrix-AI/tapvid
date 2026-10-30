@@ -12,6 +12,7 @@
 // `captions` renders as before. `style` in the tokens is the recommended style name; the drawn
 // style is always `variant` (replica.audio.captions).
 import React from 'react';
+import { phrases } from './captionPhrases.js';
 
 // Plate styles: a phrase holds at most 28 characters, two short lines at 4.2 % of the height, bold,
 // on the plate, its bottom 7 % above the frame's bottom edge.
@@ -23,19 +24,6 @@ const CREATOR = { maxChars: 16, centerY: 77.8, size: 2.65, weight: 600, plate: f
 const PLATE_STYLE = { background: 'rgba(0,0,0,0.55)', borderRadius: '1.2cqh', padding: '1cqh 2cqw' };
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-
-function phrases(words, maxChars) {
-  const out = [];
-  let cur = [];
-  let len = 0;
-  for (const w of words) {
-    if (cur.length && len + w.text.length > maxChars) { out.push(cur); cur = []; len = 0; }
-    cur.push(w);
-    len += w.text.length;
-  }
-  if (cur.length) out.push(cur);
-  return out.map((ws) => ({ words: ws, start: ws[0].start, end: ws[ws.length - 1].end }));
-}
 
 export function Captions({ t, words, variant, Design }) {
   if (!words || !words.length) return null;
