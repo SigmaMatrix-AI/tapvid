@@ -65,18 +65,6 @@ Each skill's README explains any MCP connections, external APIs, or accounts it 
 
 The skills in this repository are open source. External service implementations are maintained separately and are not included here.
 
-## Contributing
-
-Bug reports, documentation improvements, and new skills are welcome.
-
-When opening an issue, include:
-
-- The skill name and environment you used.
-- What you expected to happen.
-- What happened, with steps to reproduce it.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development instructions and guidelines for adding a skill.
-
 ## License
 
 [Apache-2.0](LICENSE). Third-party components and downloaded content retain their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
