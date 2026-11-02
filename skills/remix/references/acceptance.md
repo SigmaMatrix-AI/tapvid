@@ -151,6 +151,8 @@ fixed:
 | Idle motion matches | a sticker that boils in the original stands still | the measured `poses_per_s`, which parts move and by how much |
 | Moving content is a video slot | a GIF or a screen recording kept as a still | field type `video`, the reference clip from `refs.mjs` |
 | Captions match | a dark plate where the original has plate-less words | `Design.captions` from the measurements |
+| Captions stand where the original's stand | `centerY` copied from a title, so the captions land on the headline | measure on a frame with spoken words (`references/captions.md` §1) |
+| Lines keep their titles inside them | a title timed in the original's seconds, landing in the next line once the copy is shorter | times as fractions of the segment (`references/boards.md` §2) |
 | Captions show where the original shows them | captions under a kinetic title that already says the line; full-frame captions at the split-screen height | the board's `meta.captions` (`false`, `off`, a `centerY`) |
 | Elements behind the person stay behind | a sunburst drawn over the presenter's hair, or cut by a hand-drawn mask | `behind` + `media.cutout` + `<key>Cutout` (`references/boards.md` §8) |
 | Sound effects are cued | an entrance that pops in the original is silent | `data-sfx` on the element; `compare.mjs --timing` lists missing cues |

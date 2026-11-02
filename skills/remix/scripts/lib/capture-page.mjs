@@ -84,6 +84,23 @@ export function installCapturePage({ fake, mask, cursorId, rippleMs }) {
   }, true);
 }
 
+// Runs in the page: changes the black background invisibly on every frame for `ms`, ending on black.
+export function warmRecorder(ms) {
+  return new Promise((resolve) => {
+    const { style } = document.body;
+    const end = performance.now() + ms;
+    const tick = () => {
+      if (performance.now() >= end) {
+        style.background = '#000';
+        return resolve();
+      }
+      style.background = style.background === 'rgb(1, 1, 1)' ? '#000' : '#010101';
+      requestAnimationFrame(tick);
+    };
+    tick();
+  });
+}
+
 // Runs in the page: a full-viewport white marker with a black centre square for at least
 // `durationMs` on the black start page; resolves the wall-clock ms at which it entered the
 // DOM, from a task like any page update, so it reaches the video the way the page's changes do.

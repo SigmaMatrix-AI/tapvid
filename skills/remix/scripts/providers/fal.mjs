@@ -36,7 +36,7 @@ export const meta = {
         aspects: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
         duration: { min: 4, max: 30 },
         resolutions: [{ name: '480p', shortEdge: 480 }, { name: '720p', shortEdge: 720 }],
-        firstFrame: true, lastFrame: true, maxRefs: 30, maxRefVideos: 10, refVideoMaxS: 30,
+        firstFrame: true, lastFrame: true, maxRefs: 30, maxRefVideos: 10, refVideoMinS: 2, refVideoMaxS: 30,
         price: { usdPerSecond: { '480p': 0.2205, '720p': 0.473 } },
       }],
     },
@@ -133,7 +133,7 @@ async function videoInput(req, ctx) {
     // 30 s combined across the clips; split it evenly (each clip ≥ 2 s).
     const perClip = Math.max(2, Math.floor(r.refVideoMaxS / refVideos.length));
     input.video_urls = [];
-    for (const ref of refVideos) input.video_urls.push(await upload(ctx, ctx.trim(ref.file, { maxS: perClip, maxBytes: MAX_UPLOAD_BYTES })));
+    for (const ref of refVideos) input.video_urls.push(await upload(ctx, ctx.trim(ref.file, { minS: r.refVideoMinS, maxS: perClip, maxBytes: MAX_UPLOAD_BYTES })));
   }
   return { endpoint: `${r.model}/reference-to-video`, input };
 }

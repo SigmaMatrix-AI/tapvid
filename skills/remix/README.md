@@ -70,7 +70,7 @@ When available, setup uses Homebrew on macOS or winget on Windows to install mis
 
 Set `TAPVID_VIDEO_HOME` to place runtime data, caches, and custom providers elsewhere. `PLAYWRIGHT_BROWSERS_PATH` controls the browser cache. Neither the checkout nor an installed skill needs `node_modules`.
 
-Updating the installed skill preserves existing TapVid clone projects, provider settings, and stored credentials in their current formats and locations. Keep your projects and `~/.tapvid-video` when replacing the skill folder.
+To check your version or update, see [Check the version and update](https://github.com/SigmaMatrix-AI/tapvid#check-the-version-and-update). Updating the installed skill preserves existing TapVid clone projects, provider settings, and stored credentials in their current formats and locations. Keep your projects and `~/.tapvid-video` when replacing the skill folder.
 
 ## Media providers and MCP
 

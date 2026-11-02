@@ -2,6 +2,8 @@
 name: remix
 description: Clone a reference video into a reusable template (React boards, transition table, narrative structure, reference clips per media slot, sound effects) and replicate it on the user's own topic — rewrite the copy, generate or find new footage that follows the original shots with the user's people and products swapped in, voice it at the original's pace, score it and render tapvid.mp4, all locally, at a 1:1 `high` tier (default) or a fast `low` tier. Use when the user asks (in any language) to clone, replicate or remake a reference video (a local file, a link, or keywords to search for one), or to reuse a template made earlier on a new topic.
 allowed-tools: Read, Write, Edit, Bash, Agent, Task, WebSearch, WebFetch
+metadata:
+  version: "1.0.1"
 ---
 
 # Remix a video
@@ -132,9 +134,10 @@ generation starts. Deliver with the same report, and say which choices you made.
 1. `node "$SKILL_ROOT/scripts/ensure-runtime.mjs"` installs whatever is missing (Homebrew on macOS, winget on
    Windows) and the runtime; the first run downloads Chromium and can take minutes — say so. Only a
    `missing: …` last line (no package manager, or a manual step) needs the user: show what it printed.
-2. `node "$SKILL_ROOT/scripts/media.mjs" providers --json` — read it with `references/providers.md`, quietly. No
-   transcription provider ready → `node "$SKILL_ROOT/scripts/ensure-runtime.mjs" --tool whisper-cli` (local, free;
-   the model download falls back to a mirror on a slow network by itself).
+2. `node "$SKILL_ROOT/scripts/media.mjs" providers --json` — read it with `references/providers.md`, quietly. `whisper-local`
+   not ready → `node "$SKILL_ROOT/scripts/ensure-runtime.mjs" --tool whisper-cli` (local, free, first in the
+   transcription order even when another vendor has a key; the model download falls back to a mirror on a slow
+   network by itself).
    Keys and generation providers are not raised now; they come up in step 4, where they matter.
 
 ## Step 1 — inputs
@@ -225,7 +228,7 @@ and these references cover what you need, so do not read plugin sources.
 7. `node "$SKILL_ROOT/scripts/refs.mjs" "$PROJECT"` for all slots; write one English `describe` per slot in
    `template/refs/refs.json`.
 8. Narrative structure `template/skill/SKILL.md` and the rest of `template.json` (`references/structure.md`).
-9. Swap test (second topic, min / max list counts, Chinese and 1.5× English text).
+9. Swap test (second topic, min / max list counts, Chinese and 1.5× English text, every line half its length).
 10. Acceptance (`references/acceptance.md`): full `build-boards.mjs`, then in one command (they are
     independent, run them in the background together) `clock.mjs "$PROJECT"`,
     `compare.mjs "$PROJECT" --fail-under 0.95 --timing` (sound effects included) and
@@ -302,7 +305,8 @@ Then:
    `$REPLICA/elements/`; presenter slots as digital human (narration mode only).
    **At `low`** each layer is one slot: `presenter` stays a digital human; a pixel layer stays `ai` /
    `reference` with `provider: "tapvid"`, `model: "minimax-h3"` when TapVid is ready (else leave both
-   `null`), the replacements in `replace` and the prompt from `references/replica.md` §6 Low tier; a screen
+   `null`), the replacements in `replace` and the prompt from `references/replica.md` §6 Low tier, and goes to
+   keyframe when the identity gate in step 7 fails; a screen
    layer becomes `user` (their recording or screenshot) when it must be readable, otherwise it is treated
    like a pixel layer; a code layer is an element — write `$REPLICA/elements/<Board>.<key>.jsx` for the new
    topic inside the region its field's `desc` names. The `texts` items are the new copy, one per original
@@ -393,11 +397,19 @@ rebuild, ask again. Wait for an explicit yes.
    returning pass, or the problem and a clean span: extra hands, wrong fingers, a morphing product, garbled text, clipping, the subject
    drifting back to the original, a digital human's pace drifting within its clip. Trim to a clean span that
    covers the slot; otherwise state the cost and regenerate once with the prompt fixed.
+   **Identity gate, on every clip that shows a person** (`references/replica.md` §9): the original's person must
+   not appear in any frame. `inspect.mjs "$REPLICA" <request-id> --identity`, look at every frame, then
+   `identity.mjs pass|fail "$REPLICA" <request-id> --saw "<whose face, where>"`; `render.mjs` refuses the film
+   until `identity.mjs status "$REPLICA"` is clear. A clip that fails is never trimmed or kept: it goes to keyframe,
+   and the other reference clips of the film lose their verdict and are read again. Do not route a generated clip
+   through `source: user`: that slot leaves the gate. Contact sheets and overviews do not count as this check.
 
 | Failure | Do |
 |---|---|
 | Network / 5xx | The runner already retried once; rerun `run` later |
 | Moderation | Rewrite the prompt without brands, celebrities, copyrighted elements; retry once; a refused reference video switches that slot to keyframe |
+| A first frame with a realistic face flagged as sensitive (Seedance) | Move that slot to another first-frame model (`veo-3.1-fast`); rewording does not help |
+| The same error returns seconds after a rerun, with no new vendor job | The rerun returned the earlier result of an identical request: change the model or the prompt, then run it |
 | A reference picture refused by the vendor | Retry that request without the reference (prompt only); a portrait reframe falls back to `reframe.mjs` |
 | Unsupported / invalid | The runner moved to the next model or vendor; nothing to do unless all failed |
 | Bad key / no balance | That vendor is off for this run; tell the user (new key via `set-key.mjs`, or top up) |
@@ -419,10 +431,13 @@ Read `references/audio.md` and, in narration mode, `references/captions.md`.
 1. `node "$SKILL_ROOT/scripts/project.mjs" "$REPLICA" --final`.
 2. `node "$SKILL_ROOT/scripts/validate.mjs" project "$REPLICA/project"` — fix every error.
 3. `node "$SKILL_ROOT/scripts/frames.mjs" "$REPLICA"`, then fast sub-agents (one per group of scenes) look at
-   every scene midpoint, every transition's start / middle / end and the contact sheet — text overflow, captions covered, a pop-up over a face, jumps at
+   every scene midpoint, the frames around every line boundary, every transition's start / middle / end and the contact sheet — text overflow, two texts overlapping (captions included; `frames.mjs` also scans the film for this and exits 1 listing each pair), captions covered, a pop-up over a face, jumps at
    boundaries, sound vs picture. Fix and repeat, at most 3 rounds.
 4. `node "$SKILL_ROOT/scripts/render.mjs" "$REPLICA"` → `$REPLICA/out/tapvid.mp4` (1080p). Check the render: its
-   length against the original's, the pace line `timing.mjs` printed, and frames sampled across the film.
+   length against the original's, the pace line `timing.mjs` printed, and frames sampled across the film,
+   including the first second of every scene that shows a person, frame by frame at full width: a midpoint never
+   sees an original person who is only in a scene's opening frames. A slot that went back to generation
+   counts as done only when its request completed: a failed request leaves the old clip under the same file name.
    Alternative versions the user asks for go to `out/tapvid-<what>.mp4`; `tapvid.mp4` is always the current one.
 5. `node "$SKILL_ROOT/scripts/review.mjs" "$PROJECT" <slug>` again: the Final cut tab plays the film beside
    the original with a version picker, the Assets tab every generated clip with its vendor and cost.

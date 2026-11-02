@@ -1,14 +1,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { readJson, writeJson } from '../../skills/remix/scripts/lib/common.mjs';
 import { loadReplica } from '../../skills/remix/scripts/lib/replica.mjs';
 import { boardCaptions, buildProject, generateProject } from '../../skills/remix/scripts/lib/project.mjs';
-import { checkBoardCaptions, checkCutoutDrawn } from '../../skills/remix/scripts/lib/validate-template.mjs';
+import { checkBoardCaptions, checkCaptionBand, checkCutoutDrawn, checkSegmentSeconds } from '../../skills/remix/scripts/lib/validate-template.mjs';
+import { overlappingTexts } from '../../skills/remix/scripts/lib/capture.mjs';
+import { phrases } from '../../skills/remix/assets/template/src/components/captionPhrases.js';
+import { clipFit, fitClip } from '../../skills/remix/scripts/lib/fit-clip.mjs';
+import { createCtx } from '../../skills/remix/scripts/lib/media/ctx.mjs';
+import { probeDuration } from '../../skills/remix/scripts/lib/replica.mjs';
 import { resolveTiming } from '../../skills/remix/scripts/lib/timing.mjs';
 import { lintDeterminism, validateProject } from '../../skills/remix/scripts/lib/validate-project.mjs';
-import { clip, fakeTasks, makeClone, makeReplica, runtimeReady } from './render-helpers.mjs';
+import { clip, fakeTasks, makeClone, makeReplica, probe, runtimeReady } from './render-helpers.mjs';
 
 const read = (dir, ...p) => readFileSync(join(dir, ...p), 'utf-8');
 
@@ -78,6 +85,99 @@ test('boardCaptions: false drops a board\'s captions, off mutes its lines, other
   assert.deepEqual(boardCaptions(undefined, words, segments), { words, style: {} });
   assert.deepEqual(boardCaptions(true, words, segments), { words, style: {} });
   assert.deepEqual(boardCaptions({ off: ['items.title'], centerY: 80 }, words, segments), { words: [words[2]], style: { centerY: 80 } });
+});
+
+const incomingTransitionS = (ctx) => {
+  const [a, b] = ctx.replica.scenes;
+  return (ctx.template.transitions || []).find((x) => x.from === a.board && x.to === b.board)?.duration || 0;
+};
+
+test('clipFit speeds a clip into its scene, and cuts what the speed limit leaves over', () => {
+  assert.equal(clipFit(5, 5), null);
+  assert.equal(clipFit(5, 4.9), null);
+  assert.equal(clipFit(5, 8), null);
+  assert.deepEqual(clipFit(5, 2.5), { speed: 2, cutS: 0 });
+  assert.deepEqual(clipFit(5, 2), { speed: 2.5, cutS: 0 });
+  assert.deepEqual(clipFit(5, 1), { speed: 2.5, cutS: 2.5 });
+});
+
+test('fitClip writes a clip of the scene\'s length and keeps the original', { skip: !runtimeReady }, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'tapvid-fit-'));
+  const src = join(dir, 'clip.mp4');
+  execFileSync('ffmpeg', ['-y', '-v', 'error', '-f', 'lavfi', '-i', 'testsrc=size=160x90:rate=30:duration=5', '-pix_fmt', 'yuv420p', src]);
+  const { file, fit } = fitClip(src, 2.5);
+  assert.deepEqual(fit, { speed: 2, cutS: 0 });
+  assert.notEqual(file, src);
+  assert.ok(Math.abs(probeDuration(file) - 2.5) < 0.1);
+  assert.ok(Math.abs(probeDuration(src) - 5) < 0.1);
+  assert.deepEqual(fitClip(src, 6), { file: src, fit: null });
+});
+
+test('final: a generated clip longer than its scene is sped up, then cut; one that fits plays as it is', () => {
+  const fit = (cover) => {
+    const dir = makeReplica(makeClone());
+    fakeTasks(dir, { cover });
+    const ctx = loadReplica(dir);
+    writeJson(ctx.path, { ...ctx.replica, resolved: resolveTiming(ctx).resolved });
+    const meta = generateProject(dir, { mode: 'final' });
+    const target = meta.scenes[0].duration + incomingTransitionS(ctx);
+    return { placed: probe(join(meta.dir, 'assets', 'media', '01-Title01-cover.mp4')), target, cut: meta.warnings.filter((w) => /too long/.test(w)) };
+  };
+  const sped = fit(5);
+  assert.ok(sped.target > 2 && sped.target < 2.5, `scene ${sped.target}s`);
+  assert.ok(Math.abs(sped.placed - sped.target) < 0.1, `placed ${sped.placed}s for ${sped.target}s`);
+  assert.deepEqual(sped.cut, []);
+  const cut = fit(10);
+  assert.ok(Math.abs(cut.placed - cut.target) < 0.1, `placed ${cut.placed}s for ${cut.target}s`);
+  assert.match(cut.cut[0], /01-Title01\.cover: the clip is too long .* at 2\.5×; its last [\d.]+s are cut/);
+  const fits = fit(1);
+  assert.ok(Math.abs(fits.placed - 1) < 0.1);
+  assert.deepEqual(fits.cut, []);
+});
+
+test('ctx.trim slows a reference clip up to the model\'s minimum and leaves a long enough one alone', { skip: !runtimeReady }, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'tapvid-trim-'));
+  const short = join(dir, 'short.mp4');
+  clip(short, 0.9, '160x90');
+  const ctx = createCtx({ provider: 'x', secrets: { secret: () => '' }, cacheDir: dir });
+  const stretched = ctx.trim(short, { minS: 2, maxS: 15 });
+  assert.notEqual(stretched, short);
+  assert.ok(probe(stretched) >= 2 && probe(stretched) < 2.2, `${probe(stretched)}s`);
+  assert.equal(ctx.trim(short, { minS: 0.5, maxS: 15 }), short);
+});
+
+test('phrases break at a silence: a muted line leaves no phrase waiting across it', () => {
+  const word = (text, start, end) => ({ text, start, end });
+  const words = [word('Revisions', 0, 0.5), word('drag.', 0.5, 0.9), word('Now', 5, 5.2), word('fly.', 5.2, 5.5)];
+  const [{ words: muted }] = [boardCaptions({ off: ['middle'] }, [...words.slice(0, 2), word('hidden', 1, 4.9), ...words.slice(2)], [{ key: 'middle', start: 1, end: 4.95 }])];
+  assert.deepEqual(muted, words);
+  assert.deepEqual(phrases(muted, 38).map((g) => [g.start, g.end]), [[0, 0.9], [5, 5.5]]);
+  assert.deepEqual(phrases(words.slice(0, 2), 38).map((g) => g.words.length), [2]);
+  assert.equal(phrases(words.slice(0, 2), 10).length, 2);
+});
+
+test('checkSegmentSeconds warns on the original\'s seconds, not on a fraction or a short entrance', () => {
+  const meta = { example_segments: [{ key: 'leadSay', start: 0, end: 2 }, { key: 'compareSay', start: 2, end: 4 }] };
+  assert.match(checkSegmentSeconds('E', meta, 'title(q, [1,2,3,4], 5.4, "leadSay", 1.637, 0.85)')[0], /1\.637 s after line "leadSay"/);
+  assert.equal(checkSegmentSeconds('E', meta, 'const a = local("compareSay") - 2.987;').length, 1);
+  assert.deepEqual(checkSegmentSeconds('E', meta, 'const a = local("compareSay") - 0.087; const s = seg("leadSay"); at(s, 0.78 * span);'), []);
+});
+
+test('checkCaptionBand finds captions on a title; a board without captions or another centerY passes', () => {
+  const elements = [{ id: 'E.question', board: 'E', kind: 'title', box: [0.12, 0.06, 0.76, 0.07] }, { id: 'E.cap', board: 'E', kind: 'caption', box: [0.1, 0.07, 0.8, 0.06] }];
+  const design = { captions: { centerY: 9, size: 4 } };
+  assert.match(checkCaptionBand('E', undefined, design, elements)[0], /captions at 9% run over E\.question/);
+  assert.equal(checkCaptionBand('E', undefined, design, elements).length, 1);
+  assert.deepEqual(checkCaptionBand('E', false, design, elements), []);
+  assert.deepEqual(checkCaptionBand('E', { centerY: 40 }, design, elements), []);
+});
+
+test('overlappingTexts pairs texts that collide, not ones that only touch', () => {
+  const part = (text, box) => ({ part: 'Heading', text, box });
+  const title = part('Title', [100, 100, 500, 200]);
+  assert.equal(overlappingTexts([title, part('Caption', [150, 120, 400, 180])]).length, 1);
+  assert.deepEqual(overlappingTexts([title, part('Below', [100, 198, 500, 300])]), []);
+  assert.deepEqual(overlappingTexts([title, part('Far', [600, 100, 900, 200])]), []);
 });
 
 test('checkBoardCaptions: the rule is required once the template has captions; off names narration fields', () => {

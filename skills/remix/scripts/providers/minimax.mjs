@@ -33,15 +33,15 @@ export const meta = {
       models: [
         { id: 'MiniMax-H3', default: true, aspects: H3_ASPECTS, duration: { min: 4, max: 15 },
           resolutions: [{ name: '768P', shortEdge: 768 }, { name: '2K', shortEdge: 1440 }],
-          firstFrame: true, lastFrame: true, maxRefs: 9, maxRefVideos: 3, refVideoMaxS: REF_VIDEO_TOTAL_S,
+          firstFrame: true, lastFrame: true, maxRefs: 9, maxRefVideos: 3, refVideoMinS: 2, refVideoMaxS: REF_VIDEO_TOTAL_S,
           price: { usdPerSecond: { '768P': 0.08, '2K': 0.13 } } },
         { id: 'MiniMax-H3-Highspeed', aspects: H3_ASPECTS, duration: { min: 4, max: 15 },
           resolutions: [{ name: '768P', shortEdge: 768 }],
-          firstFrame: true, lastFrame: true, maxRefs: 9, maxRefVideos: 3, refVideoMaxS: REF_VIDEO_TOTAL_S,
+          firstFrame: true, lastFrame: true, maxRefs: 9, maxRefVideos: 3, refVideoMinS: 2, refVideoMaxS: REF_VIDEO_TOTAL_S,
           price: { usdPerSecond: { '768P': 0.06 } } },
         { id: 'MiniMax-H3-Lite', aspects: H3_ASPECTS, duration: { min: 4, max: 15 },
           resolutions: [{ name: '480P', shortEdge: 480 }, { name: '768P', shortEdge: 768 }],
-          firstFrame: true, lastFrame: true, maxRefs: 9, maxRefVideos: 3, refVideoMaxS: REF_VIDEO_TOTAL_S,
+          firstFrame: true, lastFrame: true, maxRefs: 9, maxRefVideos: 3, refVideoMinS: 2, refVideoMaxS: REF_VIDEO_TOTAL_S,
           price: { usdPerSecond: { '480P': 0.025, '768P': 0.04 } } },
       ],
     },
@@ -113,7 +113,7 @@ function videoBody(req, ctx) {
   // Split the 15 s combined allowance between the clips (each must stay ≥ 2 s).
   const perClip = refVideos.length ? Math.max(2, Math.floor(REF_VIDEO_TOTAL_S / refVideos.length)) : 0;
   for (const ref of refVideos) {
-    const file = ctx.trim(ref.file, { maxS: perClip, maxBytes: 30 * 1024 * 1024 });
+    const file = ctx.trim(ref.file, { minS: r.refVideoMinS, maxS: perClip, maxBytes: 30 * 1024 * 1024 });
     content.push({ type: 'video_url', video_url: { url: inline(ctx, file) }, role: 'reference_video' });
   }
   // Image-to-video always follows the frame's aspect; the ratio is ignored there (adaptive).

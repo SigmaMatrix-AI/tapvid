@@ -127,19 +127,22 @@ export function createCtx({ provider, secrets, fetchImpl = globalThis.fetch, cac
     return { duration_s: Number(out.format?.duration) || null, width: v.width ?? null, height: v.height ?? null };
   }
 
-  // Cut a reference video to the model's limits (length and size), re-encoded to H.264.
-  function trim(file, { maxS, maxBytes } = {}) {
+  // Fit a reference video to the model's limits, re-encoded to H.264: cut when too long or too big, slowed
+  // when too short (the original's move stays whole; looping it would add a jump back to the start).
+  function trim(file, { minS, maxS, maxBytes } = {}) {
     const src = abs(file);
     const info = probe(src);
     const tooLong = maxS && info.duration_s > maxS;
     const tooBig = maxBytes && statSync(src).size > maxBytes;
-    if (!tooLong && !tooBig) return src;
-    const out = join(cacheDir, 'trim', `${sha256File(src).slice(0, 16)}-${maxS || 'full'}-${maxBytes || 'any'}.mp4`);
+    // A hair over the minimum: the encoded length rounds to whole frames.
+    const stretch = minS && info.duration_s < minS ? (minS * 1.02) / info.duration_s : null;
+    if (!tooLong && !tooBig && !stretch) return src;
+    const out = join(cacheDir, 'trim', `${sha256File(src).slice(0, 16)}-${minS || 'any'}-${maxS || 'full'}-${maxBytes || 'any'}.mp4`);
     if (existsSync(out)) return out;
     mkdirSync(dirname(out), { recursive: true });
     const args = ['-y', '-v', 'error', '-i', src];
     if (tooLong) args.push('-t', String(maxS));
-    args.push('-c:v', 'libx264', '-preset', 'veryfast', '-crf', tooBig ? '28' : '20', '-vf', 'scale=-2:min(ih\\,1080)', '-an', out);
+    args.push('-c:v', 'libx264', '-preset', 'veryfast', '-crf', tooBig ? '28' : '20', '-vf', `${stretch ? `setpts=PTS*${stretch.toFixed(4)},` : ''}scale=-2:min(ih\\,1080)`, '-an', out);
     run('ffmpeg', args);
     return out;
   }

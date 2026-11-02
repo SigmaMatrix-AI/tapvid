@@ -36,9 +36,11 @@ exported function. Record each board's layering tier in `report.md`:
 - `t` is scene time in seconds and the frame is a pure function of it: no `Math.random` (use a seeded hash),
   no `Date.now`, no CSS transitions or animations, no timers, no own clock. Seeking to `t` always gives the
   same frame.
-- Unsegmented board: every time is a fraction of `duration`. Segmented board: elements are timed in seconds
-  from their segment's `start`, found by key (`segments.find(s => s.key === "points.1.say")`); `duration` still
-  spans the whole scene. Never seconds from the scene's start.
+- Unsegmented board: every time is a fraction of `duration`. Segmented board: an element's times are fractions
+  of its own segment, found by key (`const s = segments.find(s => s.key === "points.1.say")`, then
+  `s.start + 0.78 * (s.end - s.start)`), so it stays inside the line however short the new copy is; `duration`
+  still spans the whole scene. Only an entrance under 0.5 s may be in seconds. Never the original's seconds,
+  never seconds from the scene's start (`validate.mjs template` warns on a segment key followed by 0.5 s or more).
 - Geometry in `cqw` / `cqh` only, on a root with `containerType: "size"`. Measure in source pixels, divide by
   the source width / height.
 - Colours and fonts only from `Design` (`const { palette, font, fontHead } = Design`); no hex in a board.

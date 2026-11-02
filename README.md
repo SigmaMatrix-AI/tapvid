@@ -57,7 +57,19 @@ For example, Remix's entry file should be located at:
 ~/.claude/skills/remix/SKILL.md
 ```
 
-After installation, check the skill's README for additional dependencies and setup. If the skill does not appear, start a new agent session. When updating, back up any local edits and replace the existing skill folder rather than nesting another copy inside it.
+After installation, check the skill's README for additional dependencies and setup. If the skill does not appear, start a new agent session.
+
+## Check the version and update
+
+A skill's version is `metadata.version` at the top of its `SKILL.md`.
+
+To update, ask your agent:
+
+```text
+Update the Remix skill from https://github.com/SigmaMatrix-AI/tapvid
+```
+
+Or download this repository again and copy the skill's folder over the installed one. Back up any local edits first, and replace the existing folder rather than nesting another copy inside it. Then start a new agent session.
 
 ## Service access
 

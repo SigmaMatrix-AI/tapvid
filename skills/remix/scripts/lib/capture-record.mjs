@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { HOME, launchBrowser, readJson, runAsync, writeJson } from './common.mjs';
 import { ffmpeg, probe, videoInfo } from './video.mjs';
-import { flashMarker, installCapturePage, parseFake, smoothScroll } from './capture-page.mjs';
+import { flashMarker, installCapturePage, parseFake, smoothScroll, warmRecorder } from './capture-page.mjs';
 
 export const AUTH_DIR = join(HOME, 'auth');
 // Saved sessions are keyed by host; a port's colon is not allowed in a Windows file name.
@@ -42,10 +42,13 @@ const CURSOR_ID = '__tapvid-cursor';
 // for three recording intervals, with a 250 ms margin for a busy compositor at high fps.
 const FLASH_MIN_MS = 250;
 const FLASH_RECORDING_FRAMES = 3;
-// The recorder starts a few frames after the page opens; a flash shown at once was found already
-// running in the first recorded frame (its start lost, the alignment off by those frames). Half a
-// second of black page before it leaves a wide margin.
+// The recorder only gets a frame when the page changes: after a still black page the flash could be the
+// first recorded frame, however long the wait (under CPU load, 16 of 48 at 500 ms, 19 of 48 at 2 s). A page
+// changing for this long before the flash put a frame ahead of it every time (0 of 96).
 const RECORDER_WARMUP_MS = 500;
+// The flash then waits on a still page: right after that changing page it reached the video about 50 ms
+// later than the page's later changes do, which shifted every logged time by that much.
+const RECORDER_SETTLE_MS = 250;
 // The flash is the first thing recorded; it is searched for in this many seconds.
 const FLASH_SEARCH_S = 10;
 // The flash search decodes the recording at this size: enough to tell the black square from the white.
@@ -296,7 +299,8 @@ export async function record(replicaArg, storyboardFile) {
     await context.addInitScript(installCapturePage, { fake: sb.fake, mask: sb.mask, cursorId: CURSOR_ID, rippleMs: RIPPLE_MS });
     const page = await context.newPage();
     await page.setContent('<html><body style="margin:0;background:#000"></body></html>');
-    await sleep(RECORDER_WARMUP_MS);
+    await page.evaluate(warmRecorder, RECORDER_WARMUP_MS);
+    await sleep(RECORDER_SETTLE_MS);
     const flashWall = await page.evaluate(flashMarker, Math.max(FLASH_MIN_MS, 1000 * FLASH_RECORDING_FRAMES / fps));
     const { act, trail } = driver(page, viewport, fps);
     // Shots keep the drawn cursor: hiding it for the screenshot would blank it in the video too.

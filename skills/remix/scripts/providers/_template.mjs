@@ -5,7 +5,7 @@
 //   meta                 name, displayName, docs, secrets[], concurrency, pollIntervalS?, timeoutS?,
 //                        capabilities: { '<capability>': { models: [model…] } } — model fields in
 //                        scripts/lib/media/adapt.mjs (aspects, duration/durations, resolutions,
-//                        firstFrame, lastFrame, maxRefs, maxRefVideos, refVideoMaxS, modes, maxChars, price)
+//                        firstFrame, lastFrame, maxRefs, maxRefVideos, refVideoMinS, refVideoMaxS, modes, maxChars, price)
 //   verify(ctx)          optional: cheapest authenticated call; throw MediaError('auth') on a bad key.
 //                        May return { unavailable: ['music.generate'] } for capabilities the account lacks.
 //   estimate(cap, req)   optional: { usd } | { credits }; default estimateFromMeta() on the model's price.
@@ -16,7 +16,7 @@
 //
 // req = { id, capability, params, model, resolved_params, out }. params follow
 // schemas/capabilities/<capability>.json; resolved_params hold what the runner fitted to the
-// model (model, resolution, duration, aspect, crop, refVideoMaxS). Map them to the API's names;
+// model (model, resolution, duration, aspect, crop, refVideoMinS, refVideoMaxS). Map them to the API's names;
 // throw MediaError('unsupported') for anything the API cannot do — never drop it silently.
 //
 // result = { files: [{ path, mime, duration_s?, width?, height?, words? }] } or { items: [...] },
@@ -25,7 +25,7 @@
 //
 // ctx: secret(name), json(url, opts), bytes(url, opts), fetch(url, init), download(url, outPrefix),
 // writeOut(outPrefix, buffer, ext), upload(file, via), dataUri(file), blob(file), readFile(file),
-// probe(file), trim(file, { maxS, maxBytes }), log(msg). json/bytes throw a classified MediaError
+// probe(file), trim(file, { minS, maxS, maxBytes }), log(msg). json/bytes throw a classified MediaError
 // on non-2xx (401/403 auth, 402/429 quota, 400/422 invalid, moderation text → moderation, else transient).
 import { MediaError } from '../lib/media/errors.mjs';
 import { estimateFromMeta } from '../lib/media/adapt.mjs';

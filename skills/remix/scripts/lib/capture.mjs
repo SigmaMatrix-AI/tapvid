@@ -51,6 +51,41 @@ export async function openProject(dir, canvas, { scale = 1, browser, page: pageF
   };
 }
 
+// In-page: every visible [data-part] with text of its own, as { part, text, box } with the box tight around
+// the text (an element's own box can be a whole region), leaving out a part that holds another text part.
+export function visibleTextParts() {
+  const all = [...document.querySelectorAll('[data-part]')].filter((el) => el.textContent.trim());
+  const out = [];
+  for (const el of all) {
+    if (all.some((o) => o !== el && el.contains(o))) continue;
+    if (getComputedStyle(el).visibility === 'hidden') continue;
+    let opacity = 1;
+    for (let n = el; n && n.nodeType === 1; n = n.parentElement) opacity *= Number(getComputedStyle(n).opacity);
+    if (opacity <= 0.05) continue;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const r = range.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) out.push({ part: el.dataset.part, text: el.textContent.trim().slice(0, 40), box: [r.left, r.top, r.right, r.bottom] });
+  }
+  return out;
+}
+
+// Pairs of texts sharing more than this share of the smaller one: line boxes touch without the words colliding.
+const MIN_OVERLAP = 0.05;
+
+export function overlappingTexts(parts) {
+  const out = [];
+  parts.forEach((a, i) => {
+    for (const b of parts.slice(i + 1)) {
+      const w = Math.min(a.box[2], b.box[2]) - Math.max(a.box[0], b.box[0]);
+      const h = Math.min(a.box[3], b.box[3]) - Math.max(a.box[1], b.box[1]);
+      const area = ([l, t, r, d]) => (r - l) * (d - t);
+      if (w > 0 && h > 0 && (w * h) / Math.min(area(a.box), area(b.box)) > MIN_OVERLAP) out.push([a, b]);
+    }
+  });
+  return out;
+}
+
 // In-page: every [data-sfx] element present and visible now (non-zero box, not
 // visibility:hidden, opacity through its ancestors > 0.05) as { id, kind, gain, offset, index }:
 // id is data-sfx-id or null, offset the data-time-offset of its scene wrapper (projectPlayer.js:

@@ -32,6 +32,13 @@ default:
 | `wordFadeS` | 0.08 | 0.08 | one word's fade, seconds |
 | `style` | — | — | the style the measurements belong to (a record; `replica.audio.captions` picks the style) |
 
+`centerY` comes from frames where the words are being spoken (`source/timeline.json` words), through
+`measure.mjs grid`, on at least three lines of the film: a title or sticker on the same spot is not the caption.
+The comparison cannot catch a wrong value, because it draws no template captions and the original's are burned
+in. So write each measured value next to the crop it came from in `report.md`, and check the band (`centerY` ± `size`)
+against every title and sticker box of each board that shows captions: where they collide in the original too,
+the board's `meta.captions` moves or mutes them. `validate.mjs template` warns on such a collision.
+
 The render project mounts one caption overlay above every scene (`src/components/Captions.jsx`), with
 words in scene seconds. One look, one size, one position across the film: a caption that changes between cuts
 reads as a bug. Boards never draw captions and keep the lower 20 % of the frame free of key content where
@@ -81,7 +88,9 @@ readable:
 
 On the frames from `frames.mjs`:
 
-- the caption never covers a face, the product, or a board's text;
+- the caption never covers a face, the product, or a board's text, and no two texts overlap, at line boundaries
+  too (`frames.mjs` saves the frames around them and scans the film, exit 1 per overlapping pair);
+- a phrase leaves when its words end: it never waits on screen through a muted line;
 - no phrase overruns the plate on two lines;
 - CJK punctuation never starts a line; no lone glyph on a line;
 - the caption at a transition belongs to the scene whose voice is playing.

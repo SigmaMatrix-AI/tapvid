@@ -12,6 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { basename, extname, join } from 'node:path';
 import { ASSETS_DIR, PLUGIN, fromPosixRel, run, runtimePath, toFrame, toPosixRel, writeJson } from './common.mjs';
 import { cutoutFresh, cutoutPath } from './matte.mjs';
+import { fitClip } from './fit-clip.mjs';
 import { fieldForPath, fieldPaths, replaceRequestId, slotRequestId } from './media/plan.mjs';
 import { wordTokens } from './pace.mjs';
 import { layoutNarration, scaleSourceSegments } from './timing.mjs';
@@ -77,7 +78,7 @@ function chipsFor(ctx, ref, subjects) {
 }
 
 // One scene's media: the JSX expression for each media path plus imports and asset files.
-function sceneMedia(ctx, mode, scene, index, key, out) {
+function sceneMedia(ctx, mode, scene, index, key, out, visibleS) {
   const imports = [];
   const assets = {};
   const exprs = {};
@@ -153,7 +154,14 @@ function sceneMedia(ctx, mode, scene, index, key, out) {
     const task = taskFiles(ctx.tasks, slotRequestId(ctx.replica.slug, index, scene.board, path))[0];
     // timing.mjs may have sped a self-voiced avatar clip up to the film's tempo: that copy plays.
     const sped = ctx.replica.resolved?.[key]?.media?.[path];
-    const gen = (sped && fromPosixRel(ctx.dir, sped)) || userFile || (task && fromPosixRel(ctx.dir, task.path));
+    let gen = (sped && fromPosixRel(ctx.dir, sped)) || userFile || (task && fromPosixRel(ctx.dir, task.path));
+    // A generated clip longer than its scene is retimed so its move finishes on screen: every clip runs on the
+    // scene's clock, a slot shown for part of the scene too. Not one the user chose or one that loops.
+    if (m.kind === 'video' && !userFile && gen && existsSync(gen) && !loops(path)) {
+      const fitted = fitClip(gen, visibleS);
+      gen = fitted.file;
+      if (fitted.fit?.cutS) warnings.push(`${key}.${path}: the clip is too long for ${visibleS}s even at ${fitted.fit.speed}×; its last ${fitted.fit.cutS}s are cut`);
+    }
     // Once generated, the preview shows the new material; the reference / sketch is only a stand-in.
     if (mode === 'preview' && gen && existsSync(gen)) {
       exprs[path] = asset(path, gen, tag, slotAttrs(path, `gen:${kind}`, [], m.prompt));
@@ -347,7 +355,9 @@ export function generateProject(replicaDirArg, { mode, out: outArg } = {}) {
       timing = { duration: r.duration, segments: r.segments || [], words: r.words, flag: null };
     } else timing = estimateScene(ctx, mode, scene, transitionIn, occ[i]);
     const duration = toFrame(timing.duration, fps);
-    const media = sceneMedia(ctx, mode, scene, i, key, out);
+    // The outgoing scene stays on screen through the next boundary's transition.
+    const overlap = incomingTransition(template, order, i + 1)?.duration || 0;
+    const media = sceneMedia(ctx, mode, scene, i, key, out, round3(duration + overlap));
     Object.assign(manifest, media.assets);
     warnings.push(...media.warnings);
     const segments = (timing.segments || []).map((s) => ({ key: s.key, start: round3(s.start), end: round3(s.end) }));
